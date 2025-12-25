@@ -1,0 +1,15 @@
+RewriteEngine On
+RewriteBase /vutrudongho/vutrudongho/
+
+# Nếu file thật hoặc thư mục thật → không rewrite
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# URL dạng /product/PR000001/ten-san-pham
+RewriteRule ^product/([A-Za-z0-9]+)/([A-Za-z0-9-]+)/?$ detail_product.php?ProductID=$1 [L,QSA]
+
+# Friendly URL cho hãng
+RewriteRule ^brand/([A-Za-z0-9-]+)/?$ index.php?brand=$1 [L,QSA]
+
+RewriteRule ^brand/([A-Za-z0-9]+)/([A-Za-z0-9]+)/?$ product.php?brand=$1&idBrand=$2 [L]

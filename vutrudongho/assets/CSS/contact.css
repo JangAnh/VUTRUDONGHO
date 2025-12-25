@@ -1,0 +1,40 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#text-content-aboutUs{
+    font-family: 'Roboto';
+    font-style: normal;
+    font-size: 16px;
+    line-height: 24px;
+    /* identical to box height, or 100% */
+    letter-spacing: 0.5px;
+}
+#container-hethongcuahang{
+    background: #1cabb0;
+    background: linear-gradient(133deg, #1cabb0 2%, #5ce1e6 50%, #a7eff1 100%);
+}
+#container-hethongcuahang{
+    font-family: 'Roboto';
+    font-style: normal;
+    font-size: 16px;
+    line-height: 24px;
+    /* identical to box height, or 100% */
+    letter-spacing: 0.5px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+}
+#banhangonline,
+#chamsockhachhang,
+#hotrokythuat{
+    font-family: 'Roboto';
+    font-style: normal;
+    font-size: 16px;
+    line-height: 24px;
+    /* identical to box height, or 100% */
+    letter-spacing: 0.5px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+}
