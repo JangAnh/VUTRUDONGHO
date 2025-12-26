@@ -2,7 +2,7 @@
 include './sidebar.php';
 include './container-header.php';
 //Information to search
-$dateFrom = !empty($_GET['date-from']) ? $_GET['date-from'] : date('Y-m-d');
+$dateFrom = !empty($_GET['date-from']) ? $_GET['date-from'] : '2000-01-01';
 $dateTo = !empty($_GET['date-to']) ? $_GET['date-to'] : date('Y-m-d');
 $province = !empty($_GET['order-province']) ? $_GET['order-province'] : "";
 $district = !empty($_GET['order-district']) ? $_GET['order-district'] : "";
@@ -25,15 +25,8 @@ $status = !empty($_GET['order-status']) ? $_GET['order-status'] : "";
             <span class="material-symbols-outlined">arrow_forward</span>
             <input name="date-to" type="date" class="order-search__date-to">
             <script>
-                let today = new Date();
-                let dd = String(today.getDate()).padStart(2, '0');
-                let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-                let yyyy = today.getFullYear();
-                today = yyyy + '-' + mm + '-' + dd;
-                let date_from = document.querySelector('.order-search__date-from');
-                let date_to = document.querySelector('.order-search__date-to');
-                date_from.value = today;
-                date_to.value = today;
+                // Don't set default dates - let form remain empty to show all orders by default
+                // User can specify dates when they want to filter
             </script>
         </div>
 
@@ -126,7 +119,10 @@ $status = !empty($_GET['order-status']) ? $_GET['order-status'] : "";
             <button type="submit" name="submit" class="order-search__filter" onclick="return checkOrderDateSearch();">Lọc</button>
         </div>
         <script>
-            //Set up
+            // Load province data on page load
+            callAPI('https://provinces.open-api.vn/api/?depth=1');
+            
+            //Set up filter values if form was submitted
             var queryString = window.location.search;
             var params = new URLSearchParams(queryString);
             if (params.has("submit")) {
@@ -179,22 +175,24 @@ $status = !empty($_GET['order-status']) ? $_GET['order-status'] : "";
             <?php
             include './connectdb.php';
             //Khoi tao cac bien phan trang
-            $sql = "select * from `order` as o, `payment` as p where o.PaymentID = p.PaymentID and (Date(o.OderDate) between '$dateFrom' and '$dateTo')";
+            $dateFrom = mysqli_real_escape_string($con, $dateFrom);
+            $dateTo = mysqli_real_escape_string($con, $dateTo);
+            $sql = "SELECT o.*, p.PaymentName FROM `order` AS o JOIN `payment` AS p ON o.PaymentID = p.PaymentID WHERE DATE(o.OderDate) BETWEEN '$dateFrom' AND '$dateTo'";
             if ($province != '') {
-                $search_province = explode('/', $_GET['order-province'])[1];
-                $sql .= " and o.Address like '%$search_province%'";
+                $search_province = mysqli_real_escape_string($con, explode('/', $_GET['order-province'])[1]);
+                $sql .= " AND o.Address LIKE '%$search_province%'";
                 if ($district != '') {
-                    $search_district = explode('/', $_GET['order-district'])[1];
-                    $sql .= " and o.Address like '%$search_district%'";
+                    $search_district = mysqli_real_escape_string($con, explode('/', $_GET['order-district'])[1]);
+                    $sql .= " AND o.Address LIKE '%$search_district%'";
                     if ($ward != '') {
-                        $search_ward = explode('/', $_GET['order-ward'])[1];
-                        $sql .= " and o.Address like '%$search_ward%'";
+                        $search_ward = mysqli_real_escape_string($con, explode('/', $_GET['order-ward'])[1]);
+                        $sql .= " AND o.Address LIKE '%$search_ward%'";
                     }
                 }
             }
             if ($status != '') {
-                $search_status = explode('_', $_GET['order-status'])[0];
-                $sql .= " and o.OrderStatus = '$search_status'";
+                $search_status = mysqli_real_escape_string($con, explode('_', $_GET['order-status'])[0]);
+                $sql .= " AND o.OrderStatus = '$search_status'";
             }
             $item_per_page = 8;
             $current_page = !empty($_GET['page']) ? $_GET['page'] : 1;
@@ -202,7 +200,7 @@ $status = !empty($_GET['order-status']) ? $_GET['order-status'] : "";
             $records = mysqli_query($con, $sql);
             $num_page = ceil($records->num_rows / $item_per_page);
 
-            $result = mysqli_query($con,  $sql . " order by OrderID desc limit {$item_per_page} offset {$offset};");
+            $result = mysqli_query($con,  $sql . " ORDER BY o.OrderID DESC LIMIT {$item_per_page} OFFSET {$offset};");
 
             if ($result->num_rows > 0) {
                 while ($row = mysqli_fetch_array($result)) {
@@ -222,19 +220,33 @@ $status = !empty($_GET['order-status']) ? $_GET['order-status'] : "";
                             <select onchange="updateOrder(this);" orderId="<?= $row['OrderID'] ?>" style="outline: none; padding: 2px; border-radius: 8px; border: 1px solid #ccc; color: rgba(0, 0, 0, 0.7);">
                                 <?php
                                     include "./connectdb.php";
-                                    $resultt = mysqli_query($con, "select * from `orderstatus`");
+                                    // Define valid status transitions for sequential order workflow
+                                    $validTransitions = array(
+                                        'S01' => array('S01', 'S02', 'S05'),  // Unconfirmed: can stay or go to confirmed or cancel
+                                        'S02' => array('S02', 'S03', 'S05'),  // Confirmed: can stay or go to in transit or cancel
+                                        'S03' => array('S03', 'S04', 'S05'),  // In transit: can stay or go to delivered or cancel
+                                        'S04' => array('S04'),                // Delivered: terminal state
+                                        'S05' => array('S05')                 // Cancelled: terminal state
+                                    );
+                                    
+                                    $currentStatus = $row['OrderStatus'];
+                                    $allowedStatuses = isset($validTransitions[$currentStatus]) ? $validTransitions[$currentStatus] : array();
+                                    
+                                    $resultt = mysqli_query($con, "select * from `orderstatus` ORDER BY StatusID ASC");
                                     while ($roww = mysqli_fetch_array($resultt)) {
-                                        if($row['OrderStatus'] == $roww['StatusID']) {
-                                            ?>
-                                                <option value="<?= $roww['StatusID'] ?>_<?= $roww['StatusName'] ?>" selected><?= $roww['StatusName'] ?></option>
-                                            <?php
-                                        } else {
-                                            ?>
-                                            <option value="<?= $roww['StatusID'] ?>_<?= $roww['StatusName'] ?>"><?= $roww['StatusName'] ?></option>
-                                            <?php
+                                        // Only show statuses that are allowed from current status
+                                        if(in_array($roww['StatusID'], $allowedStatuses)) {
+                                            if($currentStatus == $roww['StatusID']) {
+                                                ?>
+                                                    <option value="<?= $roww['StatusID'] ?>_<?= $roww['StatusName'] ?>" selected><?= $roww['StatusName'] ?></option>
+                                                <?php
+                                            } else {
+                                                ?>
+                                                <option value="<?= $roww['StatusID'] ?>_<?= $roww['StatusName'] ?>"><?= $roww['StatusName'] ?></option>
+                                                <?php
+                                            }
                                         }
-                                        }
-                                       
+                                    }
                                 ?>
                             </select>
                         </td>

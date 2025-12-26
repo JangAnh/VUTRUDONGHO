@@ -2068,8 +2068,29 @@ var checkOrderDateSearch = () => {
 };
 
 var updateOrder = (select) => {
+  // Define valid sequential status transitions
+  const validTransitions = {
+    'S01': ['S01', 'S02', 'S05'],  // Unconfirmed: can stay or go to confirmed or cancel
+    'S02': ['S02', 'S03', 'S05'],  // Confirmed: can stay or go to in transit or cancel
+    'S03': ['S03', 'S04', 'S05'],  // In transit: can stay or go to delivered or cancel
+    'S04': ['S04'],                // Delivered: terminal state
+    'S05': ['S05']                 // Cancelled: terminal state
+  };
+
+  let newStatus = select.value.split("_")[0];
+  let orderRow = select.closest('tr');
+  let currentStatusCell = orderRow.querySelector('td:nth-child(11)');
+  
+  // Get current status from the row (it should be the previously selected value)
+  let currentStatus = select.options[0]?.value?.split("_")[0];
+  if (!currentStatus) {
+    // Try to extract from the hidden orderId attribute's row data
+    // The dropdown already filtered options, so we'll trust the backend validation
+    currentStatus = select.value.split("_")[0];
+  }
+
   let notification = "";
-  if (select.value.split("_")[0] == "S05") {
+  if (newStatus == "S05") {
     notification =
       "Khi đơn hàng đã hủy thì không thể khôi phục! Bạn có chắc chắn muốn hủy đơn hàng này?";
   } else {
@@ -2085,7 +2106,7 @@ var updateOrder = (select) => {
       "GET",
       `update-order-status.php?OrderID=${select.getAttribute(
         "orderId"
-      )}&OrderStatusID=${select.value.split("_")[0]}`,
+      )}&OrderStatusID=${newStatus}`,
       true
     );
 
@@ -2097,7 +2118,9 @@ var updateOrder = (select) => {
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
         var data = JSON.parse(this.responseText);
         alert(data["message"]);
-        window.location.reload();
+        if (data["status"] == "success") {
+          window.location.reload();
+        }
       } else if (this.readyState === XMLHttpRequest.DONE) {
         alert("Lỗi khi lấy dữ liệu");
       }

@@ -7,20 +7,43 @@ try {
     $id = $_GET['OrderID'];
     $status_id = $_GET['OrderStatusID'];
     
+    // Define valid sequential status transitions
+    $validTransitions = array(
+        'S01' => array('S01', 'S02', 'S05'),  // Unconfirmed: can stay or go to confirmed or cancel
+        'S02' => array('S02', 'S03', 'S05'),  // Confirmed: can stay or go to in transit or cancel
+        'S03' => array('S03', 'S04', 'S05'),  // In transit: can stay or go to delivered or cancel
+        'S04' => array('S04'),                // Delivered: terminal state
+        'S05' => array('S05')                 // Cancelled: terminal state
+    );
+    
     // Bắt đầu transaction
     $pdo->beginTransaction();
 
     //Lay order status cua order hien tai, xet:
     $stmt = $pdo->prepare("select OrderStatus from `order` where OrderID = ?");
     $stmt->execute([$id]);
-    $current_status =  $stmt->fetchColumn();
+    $current_status = $stmt->fetchColumn();
+    
+    // Validate that the new status is allowed from the current status
+    if (!isset($validTransitions[$current_status]) || !in_array($status_id, $validTransitions[$current_status])) {
+        $response = array(
+            'status' => 'error',
+            'message' => "Không thể chuyển từ trạng thái hiện tại sang trạng thái này! Vui lòng tuân theo quy trình tuần tự: Chưa xác nhận → Đã xác nhận → Đang giao hàng → Đã giao hàng."
+        );
+        $pdo->rollback();
+        echo json_encode($response);
+        exit;
+    }
+    
     //Neu $status_id == "S05" thi thong bao khong cho set lai trang thai don da huy
     if($current_status == 'S05') {
         $response = array(
             'status' => 'error',
             'message' => "Bạn không thể cập nhật do đơn hàng này đã bị hủy!"
         );
-        return;
+        $pdo->rollback();
+        echo json_encode($response);
+        exit;
     } else { //Neu $status_id dang != "S05" thi cho phep cap nhat
         $stmt = $pdo->prepare("update `order` set OrderStatus = ? where OrderID = ?;");
         $stmt->execute([$status_id, $id]);
