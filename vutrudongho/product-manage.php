@@ -153,6 +153,7 @@ $keyWord = !empty($_GET['product-search']) ? str_replace("\\", "", $_GET['produc
             <th>Giá bán</th>
             <th>Giảm giá (%)</th>
             <th>Mô tả</th>
+            <th>Số lượng</th>
             <th>Trạng Thái</th>
             <th>Cập nhật</th>
             <th>Xóa</th>
@@ -166,12 +167,12 @@ $keyWord = !empty($_GET['product-search']) ? str_replace("\\", "", $_GET['produc
             $item_per_page = 8;
             $current_page = !empty($_GET['page']) ? $_GET['page']: 1;
             $offset = ($current_page - 1) * $item_per_page;
-            $records = mysqli_query($con, "select b.BrandName, p.ProductID, p.ProductName, p.ProductImg, p.Model, p.Color, p.Gender, p.ImportPrice, p.PriceToSell, p.Discount, p.Description, p.Status, p.CanDel
+            $records = mysqli_query($con, "select b.BrandName, p.ProductID, p.ProductName, p.ProductImg, p.Model, p.Color, p.Gender, p.ImportPrice, p.PriceToSell, p.Discount, p.Description, p.Status, p.CanDel, p.Quantity
                                            from `brand` as b, `product` as p
                                            where b.BrandID = p.BrandID and (p.ProductName regexp '{$keyWord}' or b.BrandName = '{$keyWord}' or p.Model = '{$keyWord}' or p.Color = '{$keyWord}' or p.Gender = '{$keyWord}')");
             $num_page = ceil($records->num_rows / $item_per_page);
 
-            $result = mysqli_query($con, "select b.BrandName, p.ProductID, p.ProductName, p.ProductImg, p.Model, p.Color, p.Gender, p.ImportPrice, p.PriceToSell, p.Discount, p.Description, p.Status, p.CanDel
+            $result = mysqli_query($con, "select b.BrandName, p.ProductID, p.ProductName, p.ProductImg, p.Model, p.Color, p.Gender, p.ImportPrice, p.PriceToSell, p.Discount, p.Description, p.Status, p.CanDel, p.Quantity
                                           from `brand` as b, `product` as p
                                           where b.BrandID = p.BrandID and (p.ProductName regexp '{$keyWord}' or b.BrandName = '{$keyWord}' or p.Model = '{$keyWord}' or p.Color = '{$keyWord}' or p.Gender = '{$keyWord}') order by p.ProductID desc limit {$item_per_page} offset {$offset}");
 
@@ -190,6 +191,7 @@ $keyWord = !empty($_GET['product-search']) ? str_replace("\\", "", $_GET['produc
                             <td><?= number_format($row['PriceToSell']) ?></td>
                             <td><?= $row['Discount'] ?></td>
                             <td><?= $row['Description'] ?></td>
+                            <td><?= $row['Quantity'] ?></td>
                             <td><?= $row['Status'] == 1 ? "Kinh doanh" : "Ngừng kinh doanh"?></td>
                             <?php
                                 $checkBrand = mysqli_query($con, "select `status` from `brand` where `BrandName` = '{$row['BrandName']}';");
