@@ -139,6 +139,8 @@
                 <div class="voucher_name">
                     <div class="voucher_name_container" id="voucher_name_container"></div>
                     <div class="voucher_discount" id="voucher_discount"></div>
+                    <!-- clear button: hidden until a voucher is applied -->
+                    <button type="button" id="voucher_clear_btn" style="display:none; margin-left:8px; background:transparent; border:none; font-size:18px; cursor:pointer;">✕</button>
                 </div>
 
                 <div class="voucher_submit">
