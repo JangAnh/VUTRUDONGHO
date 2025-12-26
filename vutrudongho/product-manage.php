@@ -22,10 +22,12 @@
         //Them vao db
         $result1 = mysqli_query($con, "insert into `product` (`ProductID`, `BrandID`, `ProductName`, `PriceToSell`, `ImportPrice`, `Discount`, `Model`, `Color`, `Gender`, `Description`, `ProductImg`, `Status`, `CanDel`) values ('{$productId}', '{$brandId}', '{$productName}', {$priceToSell}, {$importPprice}, {$discount}, '{$model}', '{$color}', '{$gender}', '{$desc}', '{$pathImg}', {$status}, 1)");
 
-        //Cap nhat ton kho
+        //Cap nhat ton kho - set initial quantity to 0 in both tables
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $now = date('Y-m-d H:i:s');
         $result2 = mysqli_query($con, "insert into `product_quantity` (`ProductID`, `Date`, `Quantity`) values ('{$productId}', '{$now}', 0);");
+        // Update product.Quantity to track current stock
+        mysqli_query($con, "update `product` set Quantity = 0 where ProductID = '{$productId}';");
 
         mysqli_close($con);
         if($result1 && $result2) {

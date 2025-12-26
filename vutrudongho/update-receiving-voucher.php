@@ -62,6 +62,9 @@ try {
         $now = date('Y-m-d H:i:s');
         $stmt = $pdo->prepare('insert into `product_quantity` (`ProductID`, `Date`, `Quantity`) values (?, ?, ?);');
         $stmt->execute([$detail[0], $now, $update_quantity]);
+        // Also update product.Quantity for display
+        $stmt = $pdo->prepare('update `product` set Quantity = ? where ProductID = ?;');
+        $stmt->execute([$update_quantity, $detail[0]]);
 
         //Kiem tra xem neu canDel cua sp dang la 1 thi set lai la 0
         $stmt = $pdo->prepare("update `product` set `CanDel` = 0 where ProductID = ? and canDel = 1;");

@@ -181,12 +181,23 @@
                             });
                         },
                         onApprove: function(data, actions) {
+                            // Capture the PayPal payment first, then submit the server form to create the order
                             return actions.order.capture().then(function(details) {
-                                window.location.href = "checkout.php";
+                                // Submit server-side order creation which will handle cart cleanup and redirect
+                                const form = document.getElementById('paymentForm');
+                                form.action = 'modules/place_order.php';
+                                form.method = 'POST';
+                                form.submit();
                             });
+                        },
+                        onCancel: function(data) {
+                            // User cancelled PayPal — redirect to checkout with cancelled status
+                            window.location.href = 'checkout.php?payment=failed';
                         },
                         onError: function(err) {
                             console.error(err);
+                            // Redirect to failure page so cart remains intact
+                            window.location.href = 'checkout.php?payment=failed';
                         }
                     }).render('#paypal-button-container');
 
@@ -223,7 +234,11 @@
                                 const usdToVndRate = 25000;   // hoặc 24,500 / 25,000 tùy bạn
                                 const amountVND = Math.round(total * usdToVndRate);
 
-                                window.location.href = "vnpay_create_payment.php?amount=" + amountVND;
+                                // Submit form to server to create the order first, then server will redirect to VNPay
+                                const form = document.getElementById('paymentForm');
+                                form.action = 'modules/place_order.php?vnp=1&amount=' + amountVND;
+                                form.method = 'POST';
+                                form.submit();
                                 return;
                             }
 

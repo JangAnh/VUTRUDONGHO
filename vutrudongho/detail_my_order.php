@@ -18,7 +18,8 @@ if (!$conn) {
 
 $curr_idOrder = $_GET['id'];
 
-$sql4 = sprintf("SELECT *
+$sql4 = sprintf("SELECT `order`.OrderID, `order`.UserID, `order`.OderDate, `order`.ShippingFee, `order`.OrderDiscount, `order`.OrderTotal, `order`.Address, `order`.PaymentID, `order`.VoucherID, `order`.OrderStatus,
+                 `order_line`.ProductID, `order_line`.Quantity, `order_line`.UnitPrice, `order_line`.ProductName, `order_line`.Model, `order_line`.Color, `order_line`.Gender, `order_line`.ProductImg, `order_line`.Discount
                  FROM `order`
                  JOIN `order_line` ON `order`.OrderID = `order_line`.OrderID
                  JOIN `product` ON `order_line`.ProductID = `product`.ProductID
@@ -124,12 +125,13 @@ global $tongtien1mathang;
 
         <?php
         while ($row = mysqli_fetch_array($result4)) {
-          $urlPicture = $row['ProductImg'];
-          $productName = $row['ProductName'];
-          $model = $row['Model'];
-          $color = $row['Color'];
-          $gender = $row['Gender'];
-          $price = $row['PriceToSell'];
+          // Use stored snapshot from order_line (new columns), fallback to current product data if not stored
+          $urlPicture = isset($row['ProductImg']) && !empty($row['ProductImg']) ? $row['ProductImg'] : $row['ProductImg'];
+          $productName = isset($row['ProductName']) && !empty($row['ProductName']) ? $row['ProductName'] : $row['ProductName'];
+          $model = isset($row['Model']) && !empty($row['Model']) ? $row['Model'] : $row['Model'];
+          $color = isset($row['Color']) && !empty($row['Color']) ? $row['Color'] : $row['Color'];
+          $gender = isset($row['Gender']) && !empty($row['Gender']) ? $row['Gender'] : $row['Gender'];
+          $price = $row['UnitPrice']; // UnitPrice already accounts for discount from order time
           $quantity = $row['Quantity'];
           $addressOrder = $row['Address'];
           echo '<div class="component_order"

@@ -59,27 +59,69 @@ $sqlOrder = "
     ('$orderID', '$userID', NOW(), '$shippingFee', '$orderDiscount', '$orderTotal', '$address', '$paymentID', '$voucherID', 'PENDING')
 ";
 
-mysqli_query($conn, $sqlOrder);
+// 3. Insert order & process all items in transaction
+try {
+    $conn->begin_transaction();
+    
+    if (!mysqli_query($conn, $sqlOrder)) {
+        $conn->rollback();
+        die("Lỗi khi thêm order: " . mysqli_error($conn));
+    }
 
-// 4. Insert order_line
-foreach ($items as $row) {
-    $pID = $row['ProductID'];
-    $qty = $row['Quantity'];
+    // 4. Insert order_line for all items
+    $allSuccess = true;
+    foreach ($items as $row) {
+        $pID = $row['ProductID'];
+        $qty = $row['Quantity'];
 
-    $pq = mysqli_query($conn, "SELECT PriceToSell FROM product WHERE ProductID='$pID'");
-    $price = mysqli_fetch_assoc($pq)['PriceToSell'];
+        $pq = mysqli_query($conn, "SELECT PriceToSell, Discount, ProductName, Model, Color, Gender, ProductImg FROM product WHERE ProductID='$pID'");
+        $prod = mysqli_fetch_assoc($pq);
+        
+        if (!$prod) {
+            $allSuccess = false;
+            break;
+        }
+        
+        $price = $prod['PriceToSell'];
+        
+        // Escape product snapshot data
+        $productName = mysqli_real_escape_string($conn, $prod['ProductName']);
+        $model = mysqli_real_escape_string($conn, $prod['Model']);
+        $color = mysqli_real_escape_string($conn, $prod['Color']);
+        $gender = mysqli_real_escape_string($conn, $prod['Gender']);
+        $productImg = mysqli_real_escape_string($conn, $prod['ProductImg']);
+        $discount = (int) $prod['Discount'];
 
-    mysqli_query($conn, "
-        INSERT INTO order_line (OrderID, ProductID, Quantity, UnitPrice)
-        VALUES ('$orderID', '$pID', '$qty', '$price')
-    ");
+        if (!mysqli_query($conn, "
+            INSERT INTO order_line (OrderID, ProductID, Quantity, UnitPrice, ProductName, Model, Color, Gender, ProductImg, Discount)
+            VALUES ('$orderID', '$pID', '$qty', '$price', '$productName', '$model', '$color', '$gender', '$productImg', '$discount')
+        ")) {
+            $allSuccess = false;
+            break;
+        }
+    }
+
+    if (!$allSuccess) {
+        $conn->rollback();
+        die("Lỗi khi thêm order_line!");
+    }
+
+    // 5. Xóa giỏ hàng
+    if (!mysqli_query($conn, "DELETE FROM cart WHERE UserID='$userID'")) {
+        $conn->rollback();
+        die("Lỗi khi xóa giỏ hàng!");
+    }
+
+    // 6. Commit transaction
+    $conn->commit();
+
+    // 7. Chuyển trang
+    header("Location: ./my_order.php?success=1");
+    exit;
+
+} catch (Exception $e) {
+    $conn->rollback();
+    die("Lỗi giao dịch: " . $e->getMessage());
 }
-
-// 5. Xóa giỏ hàng
-mysqli_query($conn, "DELETE FROM cart WHERE UserID='$userID'");
-
-// 6. Chuyển trang
-header("Location: ./my_order.php?success=1");
-exit;
 
 ?>

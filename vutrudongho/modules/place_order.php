@@ -5,6 +5,8 @@
     date_default_timezone_set('Asia/Ho_Chi_Minh');
 
     if(isset($_POST['UserID'])){
+        // Log received POST for debugging
+        error_log('[place_order] POST received: ' . json_encode(array_keys($_POST)));
         $conn = connectDatabase();
         
         $result = mysqli_query($conn,"SELECT * FROM `order`");
@@ -22,76 +24,99 @@
         $address = $_POST['Address'];
         $paymentID = $_POST['PaymentID'];
         $voucherID = $_POST['VoucherID'];
-        echo $voucherID;
+        // voucherID received - escape all POST inputs to prevent SQL injection
+        $userID = mysqli_real_escape_string($conn, $userID);
+        $shippingFee = mysqli_real_escape_string($conn, $shippingFee);
+        $orderDiscount = mysqli_real_escape_string($conn, $orderDiscount);
+        $orderTotal = mysqli_real_escape_string($conn, $orderTotal);
+        $address = mysqli_real_escape_string($conn, $address);
+        $paymentID = mysqli_real_escape_string($conn, $paymentID);
+        $voucherID = mysqli_real_escape_string($conn, $voucherID);
 
         $cart = mysqli_query($conn,"SELECT * FROM `cart` where UserID ='$userID'");
 
-        if($voucherID == "NULL"){
-            $sqlOrder = "INSERT INTO `order` (`OrderID`, `UserID`, `OderDate`, `ShippingFee`, `OrderDiscount`, `OrderTotal`, `Address`, `PaymentID`, `VoucherID`, `OrderStatus`) VALUES ('$orderID', '$userID', '$orderDate', '$shippingFee', '$orderDiscount', '$orderTotal', '$address', '$paymentID', $voucherID, 'S01')";
-        }
-        else{
-            $sqlOrder = "INSERT INTO `order` (`OrderID`, `UserID`, `OderDate`, `ShippingFee`, `OrderDiscount`, `OrderTotal`, `Address`, `PaymentID`, `VoucherID`, `OrderStatus`) VALUES ('$orderID', '$userID', '$orderDate', '$shippingFee', '$orderDiscount', '$orderTotal', '$address', '$paymentID', '$voucherID', 'S01')";
-        }
+        // Handle voucher: if "NULL" string or empty, use NULL keyword; otherwise use quoted value
+        // VoucherID has a FK constraint, so NULL is valid when no voucher is selected
+        $voucherValue = (trim($voucherID) === 'NULL' || trim($voucherID) === '') ? 'NULL' : "'{$voucherID}'";
+        
+        $sqlOrder = "INSERT INTO `order` (`OrderID`, `UserID`, `OderDate`, `ShippingFee`, `OrderDiscount`, `OrderTotal`, `Address`, `PaymentID`, `VoucherID`, `OrderStatus`) 
+                     VALUES ('$orderID', '$userID', '$orderDate', '$shippingFee', '$orderDiscount', '$orderTotal', '$address', '$paymentID', {$voucherValue}, 'S01')";
     
         try {
-            // start Transaction
+            // Start single transaction for entire order process
             $conn->begin_transaction();
 
+            // 1. Insert order
             $rs1 = $conn->query($sqlOrder);
-
             if(!$rs1){
+                $err = $conn->error;
+                error_log("[place_order] insert order failed: " . $err);
                 $conn->rollback();
-                header("Location: ../cart.php");
-            }
-            else{
-                $conn->commit();
+                // Return an error page with message for debugging (can be removed in production)
+                header("Location: ../cart.php?error=order_insert_failed");
+                exit;
             }
 
+            // 2. Process all cart items - only create order_line records, don't update inventory yet
+            $allItemsSuccess = true;
             while($item = mysqli_fetch_array($cart)){
-                $conn->begin_transaction();
                 $product = get_product_by_id($item['ProductID']);
 
-                if($product['CanDel'] == 1){
-                    $rs2 = $conn->query("Update product set CanDel= 0 where ProductID = '". $product['ProductID'] . "' ");
-                    if(!$rs2){
-                        $conn->rollback();
-                        header("Location: ../cart.php");
-                    }
-                }
-
+                // Validate stock availability - just check, don't update yet
                 $Quantity = get_quanty_product_byID($item['ProductID']);
                 $inStock = (int) $Quantity['Quantity'];
-
-                
                 $lastInStock = $inStock - (int) $item['Quantity'];
                 
                 if($lastInStock < 0){
-                    $conn->rollback();
-                    header("Location: ../cart.php");
-                }
-                else{
-                    $rs3 = $conn->query("INSERT INTO `product_quantity` (`ProductID`, `Date`, `Quantity`) VALUES ('". $product['ProductID'] ."', '$orderDate', '$lastInStock')");
+                    $allItemsSuccess = false;
+                    break;
                 }
 
                 $product_Price = $product["PriceToSell"] - (int) $product["PriceToSell"]* (int) $product['Discount']/100;
                 
-                $rs4 = $conn->query("INSERT INTO `order_line` (`OrderID`, `ProductID`, `Quantity`, `UnitPrice`) VALUES ('$orderID', '". $product['ProductID'] ."', '". $item['Quantity'] ."', '$product_Price')");
+                // Store product snapshot in order_line to preserve product info at order time
+                $productName = mysqli_real_escape_string($conn, $product['ProductName']);
+                $model = mysqli_real_escape_string($conn, $product['Model']);
+                $color = mysqli_real_escape_string($conn, $product['Color']);
+                $gender = mysqli_real_escape_string($conn, $product['Gender']);
+                $productImg = mysqli_real_escape_string($conn, $product['ProductImg']);
+                $discount = (int) $product['Discount'];
+                
+                $rs4 = $conn->query("INSERT INTO `order_line` (`OrderID`, `ProductID`, `Quantity`, `UnitPrice`, `ProductName`, `Model`, `Color`, `Gender`, `ProductImg`, `Discount`) VALUES ('$orderID', '". $product['ProductID'] ."', '". $item['Quantity'] ."', '$product_Price', '$productName', '$model', '$color', '$gender', '$productImg', '$discount')");
+                
+                if(!$rs4){
+                    $err = $conn->error;
+                    error_log("[place_order] insert order_line failed: " . $err);
+                    $allItemsSuccess = false;
+                    break;
+                }
+            }
 
-                $rs5 = $conn->query("DELETE from `cart` where UserID ='$userID'");
-                // $rs3 &&
-                if( $rs3 && $rs4 && $rs5){
-                    // commit transaction
-                    $conn->commit();
-                    header("Location: ../checkout.php",true,303);
+            // 3. Don't update inventory or clear cart here - wait for payment confirmation
+            // 4. Commit or rollback based on all operations success
+            if($allItemsSuccess){
+                $conn->commit();
+                // If this request came from VNPay flow, redirect to vnpay_create_payment with order id and amount
+                if (isset($_GET['vnp']) && isset($_GET['amount'])) {
+                    $amount = urlencode($_GET['amount']);
+                    header("Location: ../vnpay_create_payment.php?amount={$amount}&order_id={$orderID}", true, 303);
+                    exit;
                 }
-                else{
-                    $conn->rollback();
-                    header("Location: ../cart.php");
-                }
-            }   
+
+                header("Location: ../checkout.php",true,303);
+                exit;
+            }
+            else{
+                $conn->rollback();
+                header("Location: ../cart.php?error=order_processing_failed");
+                exit;
+            }
         } catch (Throwable $th) {
-            $conn->rollback();
-            header("Location: ../cart.php");
+            error_log("[place_order] exception: " . $th->getMessage());
+            if (isset($conn) && $conn->connect_errno == 0) $conn->rollback();
+            header("Location: ../cart.php?error=exception");
+            exit;
         }
     }
+    
 ?>

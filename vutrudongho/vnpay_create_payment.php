@@ -4,19 +4,39 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 /**
- * 
- *
- * @author CTT VNPAY
+ * VNPAY Payment Gateway Redirect
+ * Receives order_id and amount from place_order.php redirect
  */
+
+// Get parameters from GET (redirected from place_order.php)
+$amount = isset($_GET['amount']) ? (int)$_GET['amount'] : 0;
+$order_id = isset($_GET['order_id']) ? $_GET['order_id'] : '';
+
+// Validate amount and order_id
+if ($amount <= 0 || empty($order_id)) {
+    error_log("[vnpay_create_payment] Invalid amount or order_id: amount=$amount, order_id=$order_id");
+    header("Location: ./checkout.php?payment=failed");
+    exit;
+}
+
 require_once("./vnpay_config.php");
 
+// Check if VNPAY config is loaded
+if (!isset($vnp_Url) || !isset($vnp_Returnurl) || !isset($vnp_HashSecret) || !isset($vnp_TmnCode)) {
+    error_log("[vnpay_create_payment] VNPAY config not properly loaded");
+    header("Location: ./checkout.php?payment=failed");
+    exit;
+}
 
-$amount = isset($_GET['amount']) ? (int)$_GET['amount'] : 0;
-$vnp_TxnRef = rand(1, 10000);
-$vnp_Amount = $amount * 100;
-$vnp_Locale = $_POST['language'] ?? 'vn';
-$vnp_BankCode = $_POST['bankCode'] ?? '';
+// Use order_id as transaction reference
+$vnp_TxnRef = $order_id;
+$vnp_Amount = $amount * 100;  // VNPAY expects amount in cents
+$vnp_Locale = 'vn';  // Default locale
+$vnp_BankCode = '';  // Optional bank code
 $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
+
+// Set expiration time (15 minutes from now)
+$expire = date('YmdHis', strtotime('+15 minutes'));
 
 $inputData = array(
     "vnp_Version" => "2.1.0",
@@ -33,7 +53,6 @@ $inputData = array(
     "vnp_TxnRef" => $vnp_TxnRef,
     "vnp_ExpireDate" => $expire
 );
-
 
 if ($vnp_BankCode != "") {
     $inputData['vnp_BankCode'] = $vnp_BankCode;
@@ -55,9 +74,11 @@ foreach ($inputData as $key => $value) {
 
 $vnp_Url = $vnp_Url . "?" . $query;
 if (isset($vnp_HashSecret)) {
-    $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret);//  
+    $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
     $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
 }
+
+error_log("[vnpay_create_payment] Redirecting to VNPAY: order_id=$vnp_TxnRef, amount=$amount");
 header('Location: ' . $vnp_Url);
-die();
+exit;
 

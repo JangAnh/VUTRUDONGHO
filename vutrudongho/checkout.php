@@ -32,18 +32,37 @@ if (isset($_GET['payment'])) {
 
     <div class="main_container">
 
-        <?php if ($paymentStatus !== ""): ?>
-            
-        <?php endif; ?>
+        <?php if ($paymentStatus === "Thanh toán VNPay thành công"): ?>
+            <div class="placement_body">
+                <img src="assets/Img/icons/icons8-checkmark-200.png" alt="">
+                <h2>Đặt hàng thành công!</h2>
+                <p>Cảm ơn bạn đã tin tưởng lunarveil.com</p>
+                <a style="text-decoration: none; color: white;" href="index.php">
+                    <button>OK</button>
+                </a>
+            </div>
 
-        <div class="placement_body">
-            <img src="assets/Img/icons/icons8-checkmark-200.png" alt="">
-            <h2>Đặt hàng thành công!</h2>
-            <p>Cảm ơn bạn đã tin tưởng lunarveil.com</p>
-            <a style="text-decoration: none; color: white;" href="index.php">
-                <button>OK</button>
-            </a>
-        </div>
+        <?php elseif ($paymentStatus === "Thanh toán thất bại" || $paymentStatus === "Dữ liệu giao dịch không hợp lệ (chữ ký sai)") : ?>
+            <div class="placement_body">
+                <img src="assets/Img/icons/icons8-cancel-200.png" alt="">
+                <h2>Đã hủy thanh toán!</h2>
+                <p>Cảm ơn bạn đã tin tưởng lunarveil.com</p>
+                <a style="text-decoration: none; color: white;" href="cart.php">
+                    <button>Quay lại giỏ hàng</button>
+                </a>
+            </div>
+
+        <?php else: ?>
+            <!-- Fallback: no payment param — treat as canceled/closed -->
+            <div class="placement_body">
+                <img src="assets/Img/icons/icons8-cancel-200.png" alt="">
+                <h2>Thanh toán đã bị hủy</h2>
+                <p>Bạn đã hủy thanh toán. Giỏ hàng của bạn vẫn còn nguyên.</p>
+                <a style="text-decoration: none; color: white;" href="cart.php">
+                    <button>Quay lại giỏ hàng</button>
+                </a>
+            </div>
+        <?php endif; ?>
 
     </div>
 

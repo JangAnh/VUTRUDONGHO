@@ -3,7 +3,8 @@
 
 function get_quanty_product_byID($productID){
     $conn = connectDatabase();
-    $inStock = mysqli_query($conn,"select Quantity from product_quantity as PQ where ProductID='$productID' order by PQ.Date desc LIMIT 1");
+    // Get current quantity from product table (single value)
+    $inStock = mysqli_query($conn,"select Quantity from product where ProductID='$productID'");
     $inStock = mysqli_fetch_array($inStock);
     return $inStock;
 }

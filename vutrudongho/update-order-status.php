@@ -47,6 +47,9 @@ try {
                 $now = date('Y-m-d H:i:s');
                 $stmt = $pdo->prepare('insert into `product_quantity` (`ProductID`, `Date`, `Quantity`) values (?, ?, ?);');
                 $stmt->execute([$row['ProductID'], $now, $update_quantity]);
+                // Also update product.Quantity for display
+                $stmt = $pdo->prepare('update `product` set Quantity = ? where ProductID = ?;');
+                $stmt->execute([$update_quantity, $row['ProductID']]);
             }
         }
     }
