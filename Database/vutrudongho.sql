@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Aug 11, 2024 at 06:24 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Máy chủ: 127.0.0.1
+-- Thời gian đã tạo: Th12 27, 2025 lúc 02:16 AM
+-- Phiên bản máy phục vụ: 10.4.32-MariaDB
+-- Phiên bản PHP: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `vutrudongho`
+-- Cơ sở dữ liệu: `vutrudongho`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `admin`
+-- Cấu trúc bảng cho bảng `admin`
 --
 
 CREATE TABLE `admin` (
@@ -35,16 +35,17 @@ CREATE TABLE `admin` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `admin`
+-- Đang đổ dữ liệu cho bảng `admin`
 --
 
 INSERT INTO `admin` (`AdminID`, `FullName`, `Email`, `Password`) VALUES
+('AD01', 'Tâm Nguyễn', 'tt@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef'),
 ('AD02', 'NT', 'nt@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `brand`
+-- Cấu trúc bảng cho bảng `brand`
 --
 
 CREATE TABLE `brand` (
@@ -55,7 +56,7 @@ CREATE TABLE `brand` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `brand`
+-- Đang đổ dữ liệu cho bảng `brand`
 --
 
 INSERT INTO `brand` (`BrandID`, `BrandName`, `Description`, `Status`) VALUES
@@ -72,7 +73,7 @@ INSERT INTO `brand` (`BrandID`, `BrandName`, `Description`, `Status`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `cart`
+-- Cấu trúc bảng cho bảng `cart`
 --
 
 CREATE TABLE `cart` (
@@ -82,7 +83,7 @@ CREATE TABLE `cart` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `cart`
+-- Đang đổ dữ liệu cho bảng `cart`
 --
 
 INSERT INTO `cart` (`UserID`, `ProductID`, `Quantity`) VALUES
@@ -93,7 +94,7 @@ INSERT INTO `cart` (`UserID`, `ProductID`, `Quantity`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `contacts`
+-- Cấu trúc bảng cho bảng `contacts`
 --
 
 CREATE TABLE `contacts` (
@@ -108,7 +109,7 @@ CREATE TABLE `contacts` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `inventoryreceivingvoucher`
+-- Cấu trúc bảng cho bảng `inventoryreceivingvoucher`
 --
 
 CREATE TABLE `inventoryreceivingvoucher` (
@@ -118,10 +119,20 @@ CREATE TABLE `inventoryreceivingvoucher` (
   `Total` double NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `inventoryreceivingvoucher`
+--
+
+INSERT INTO `inventoryreceivingvoucher` (`InID`, `SupplierID`, `Date`, `Total`) VALUES
+('IN00000001', 'SU000001', '2025-12-27', 231.59),
+('IN00000002', 'SU000002', '2025-12-27', 1000),
+('IN00000003', 'SU000002', '2025-12-27', 563.18),
+('IN00000004', 'SU000004', '2025-12-27', 231.59);
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `manager`
+-- Cấu trúc bảng cho bảng `manager`
 --
 
 CREATE TABLE `manager` (
@@ -135,7 +146,7 @@ CREATE TABLE `manager` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_vietnamese_ci;
 
 --
--- Dumping data for table `manager`
+-- Đang đổ dữ liệu cho bảng `manager`
 --
 
 INSERT INTO `manager` (`ManagerID`, `Name`, `Email`, `Password`, `Role`, `CreatedAt`, `Status`) VALUES
@@ -147,7 +158,7 @@ INSERT INTO `manager` (`ManagerID`, `Name`, `Email`, `Password`, `Role`, `Create
 -- --------------------------------------------------------
 
 --
--- Table structure for table `online_users`
+-- Cấu trúc bảng cho bảng `online_users`
 --
 
 CREATE TABLE `online_users` (
@@ -157,16 +168,16 @@ CREATE TABLE `online_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_vietnamese_ci;
 
 --
--- Dumping data for table `online_users`
+-- Đang đổ dữ liệu cho bảng `online_users`
 --
 
 INSERT INTO `online_users` (`id`, `session_id`, `last_activity`) VALUES
-(6, 'qhj8sfcqub5gj5ep6eq1d6bsav', '2024-08-11 04:23:29');
+(22, 'ci408l5q55l81hecc4j1mcvi56', '2025-12-26 22:50:59');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `order`
+-- Cấu trúc bảng cho bảng `order`
 --
 
 CREATE TABLE `order` (
@@ -178,15 +189,19 @@ CREATE TABLE `order` (
   `OrderTotal` double NOT NULL,
   `Address` varchar(150) NOT NULL,
   `PaymentID` varchar(4) NOT NULL,
-  `VoucherID` varchar(5) NOT NULL,
+  `VoucherID` varchar(5) DEFAULT NULL,
   `OrderStatus` varchar(3) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `order`
+-- Đang đổ dữ liệu cho bảng `order`
 --
 
 INSERT INTO `order` (`OrderID`, `UserID`, `OderDate`, `ShippingFee`, `OrderDiscount`, `OrderTotal`, `Address`, `PaymentID`, `VoucherID`, `OrderStatus`) VALUES
+('OD00000010', 'US000013', '2025-12-27 02:26:03', 1, 12, 578.22, '123#Phường Trúc Bạch#Quận Ba Đình#Thành phố Hà Nội', 'PA03', 'VO010', 'S03'),
+('OD00000011', 'US000013', '2025-12-27 02:30:36', 2, 0, 271.28, '123#Phường Trúc Bạch#Quận Ba Đình#Thành phố Hà Nội', 'PA03', NULL, 'S01'),
+('OD00000012', 'US000013', '2025-12-27 05:45:20', 2, 5, 265.9, '123#Phường Trúc Bạch#Quận Ba Đình#Thành phố Hà Nội', 'PA03', 'VO010', 'S03'),
+('OD00000014', 'US000013', '2025-12-27 05:50:23', 1, 16, 791.86, '123#Phường Trúc Bạch#Quận Ba Đình#Thành phố Hà Nội', 'PA03', 'VO010', 'S05'),
 ('OR00000001', 'US000001', '2023-05-16 04:07:33', 30000, 10000, 1000000, '521/91E CMT8#P13#Q10#HCM', 'PA01', 'VO001', 'S01'),
 ('OR00000002', 'US000001', '2023-05-16 04:09:04', 30000, 10000, 1000000, '521/91E CMT8#P13#Q10#HCM', 'PA01', 'VO001', 'S01'),
 ('OR00000003', 'US000001', '2023-05-16 04:09:04', 30000, 10000, 1000000, '521/91E CMT8#P13#Q10#HCM', 'PA01', 'VO001', 'S02'),
@@ -200,7 +215,7 @@ INSERT INTO `order` (`OrderID`, `UserID`, `OderDate`, `ShippingFee`, `OrderDisco
 -- --------------------------------------------------------
 
 --
--- Table structure for table `orderstatus`
+-- Cấu trúc bảng cho bảng `orderstatus`
 --
 
 CREATE TABLE `orderstatus` (
@@ -209,7 +224,7 @@ CREATE TABLE `orderstatus` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `orderstatus`
+-- Đang đổ dữ liệu cho bảng `orderstatus`
 --
 
 INSERT INTO `orderstatus` (`StatusID`, `StatusName`) VALUES
@@ -222,20 +237,37 @@ INSERT INTO `orderstatus` (`StatusID`, `StatusName`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `order_line`
+-- Cấu trúc bảng cho bảng `order_line`
 --
 
 CREATE TABLE `order_line` (
   `OrderID` varchar(10) NOT NULL,
   `ProductID` varchar(8) NOT NULL,
   `Quantity` int(11) NOT NULL,
-  `UnitPrice` double NOT NULL
+  `UnitPrice` double NOT NULL,
+  `ProductName` varchar(255) DEFAULT NULL,
+  `Model` varchar(255) DEFAULT NULL,
+  `Color` varchar(255) DEFAULT NULL,
+  `Gender` varchar(50) DEFAULT NULL,
+  `ProductImg` varchar(255) DEFAULT NULL,
+  `Discount` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `order_line`
+--
+
+INSERT INTO `order_line` (`OrderID`, `ProductID`, `Quantity`, `UnitPrice`, `ProductName`, `Model`, `Color`, `Gender`, `ProductImg`, `Discount`) VALUES
+('OD00000010', 'PR000001', 2, 269.62, 'Seiko 5 Field Sports Style SRPG29K1 – Nam – Automatic (Tự Động) – Mặt Số 39.4mm, Chống Nước 10ATM, Bộ Máy In-House', 'Đồng hồ cơ', 'Bạc', 'Nam', 'SRPG29K1-699x699.png', 0),
+('OD00000010', 'PR000005', 1, 51.22, 'Casio MTP-1302D-7A1VDF – Nữ – Quartz (Pin) – Mặt Số 38.5mm, Kính Cứng, Chống Nước 5ATM.', 'Đồng hồ cơ', 'Bạch kim', 'Nữ', '35_MTP-1302D-7A1VDF-699x699.png', 0),
+('OD00000011', 'PR000001', 1, 269.62, 'Seiko 5 Field Sports Style SRPG29K1 – Nam – Automatic (Tự Động) – Mặt Số 39.4mm, Chống Nước 10ATM, Bộ Máy In-House', 'Đồng hồ cơ', 'Bạc', 'Nam', 'SRPG29K1-699x699.png', 0),
+('OD00000012', 'PR000001', 1, 269.62, 'Seiko 5 Field Sports Style SRPG29K1 – Nam – Automatic (Tự Động) – Mặt Số 39.4mm, Chống Nước 10ATM, Bộ Máy In-House', 'Đồng hồ cơ', 'Bạc', 'Nam', 'SRPG29K1-699x699.png', 0),
+('OD00000014', 'PR000001', 3, 269.62, 'Seiko 5 Field Sports Style SRPG29K1 – Nam – Automatic (Tự Động) – Mặt Số 39.4mm, Chống Nước 10ATM, Bộ Máy In-House', 'Đồng hồ cơ', 'Bạc', 'Nam', 'SRPG29K1-699x699.png', 0);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `payment`
+-- Cấu trúc bảng cho bảng `payment`
 --
 
 CREATE TABLE `payment` (
@@ -244,17 +276,18 @@ CREATE TABLE `payment` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `payment`
+-- Đang đổ dữ liệu cho bảng `payment`
 --
 
 INSERT INTO `payment` (`PaymentID`, `PaymentName`) VALUES
 ('PA01', 'Thanh toán khi nhận hàng'),
-('PA02', 'Internet Banking');
+('PA02', 'Internet Banking'),
+('PA03', 'VNPay');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `product`
+-- Cấu trúc bảng cho bảng `product`
 --
 
 CREATE TABLE `product` (
@@ -270,44 +303,46 @@ CREATE TABLE `product` (
   `Description` text DEFAULT NULL,
   `ProductImg` varchar(200) NOT NULL,
   `Status` tinyint(1) NOT NULL,
-  `CanDel` int(1) NOT NULL DEFAULT 1
+  `CanDel` int(1) NOT NULL DEFAULT 1,
+  `Quantity` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `product`
+-- Đang đổ dữ liệu cho bảng `product`
 --
 
-INSERT INTO `product` (`ProductID`, `BrandID`, `ProductName`, `PriceToSell`, `ImportPrice`, `Discount`, `Model`, `Color`, `Gender`, `Description`, `ProductImg`, `Status`, `CanDel`) VALUES
-('PR000001', 'BR001', 'Seiko 5 Field Sports Style SRPG29K1 – Nam – Automatic (Tự Động) – Mặt Số 39.4mm, Chống Nước 10ATM, Bộ Máy In-House', 7090000, 6090000, 0, 'Đồng hồ cơ', 'Bạc', 'Nam', 'Mẫu Seiko SRPG29K1 thiết kế đơn giản chức năng 3 kim, chi tiết kim chỉ cùng các cọc chấm tròn nhỏ được phủ dạ quang trên nền mặt số xanh 39.4mm.', 'SRPG29K1-699x699.png', 1, 1),
-('PR000002', 'BR001', 'Seiko 5 Field Specialist Style SRPG41K1 – Nam – Automatic (Tự Động) – Mặt Số 39.4mm, Chống Nước 10ATM, Bộ Máy In-House', 8050000, 7050000, 0, 'Đồng hồ cơ', 'Đen', 'Nam', 'Mẫu Seiko SRPG41K1 thiết kế đơn giản chức năng 3 kim, chi tiết kim chỉ cùng các cọc chấm nhỏ được phủ dạ quang trên nền mặt số kích thước 39.4mm.', 'SRPG41K1.png', 1, 1),
-('PR000003', 'BR001', 'Seiko SSB351P1 – Nam – Kính Cứng – Quartz (Pin) – Mặt Số 43.9mm, Dạ Quang, Chống Nước 10ATM.', 6375000, 5375000, 0, 'Đồng hồ cơ', 'Đen', 'Nam', 'Mẫu Seiko SSB351P1 phiên bản nam tính với tính năng Chronograph (đo thời gian) tạo nên kiểu dáng đồng hồ 6 kim trên nền mặt số lớn kích thước 43.9mm.', 'SSB351P1-699x699.png', 1, 1),
-('PR000004', 'BR002', 'Casio EFV-550L-1AVUDF – Quartz (Pin) – Mặt Số 47mm, Kính Cứng, Chống Nước 10ATM', 3529000, 2529000, 0, 'Đồng hồ cơ', 'Đen', 'Unisex', 'Mẫu Casio EFV-550L-1AVUDF mang đến cho phái mạnh vẻ ngoài lịch lãm nhưng cũng không kém phần trẻ trung đặc trưng thuộc dòng Edifice với kiểu dáng đồng hồ 6 kim đi kèm tính năng đo thời gian Chronograph.', '68_EFV-550L-1AVUDF-1-699x699.png', 1, 1),
-('PR000005', 'BR002', 'Casio MTP-1302D-7A1VDF – Nữ – Quartz (Pin) – Mặt Số 38.5mm, Kính Cứng, Chống Nước 5ATM.', 1347000, 1000000, 0, 'Đồng hồ cơ', 'Bạch kim', 'Nữ', 'Đồng hồ Casio MTP-1302D-7A1VDF có kiểu dáng truyền thống với mặt số tròn, niềng được tạo khía nổi bật quanh nền trắng mặt số, kim chỉ và vạch số được mạ bạc trên nền số.', '35_MTP-1302D-7A1VDF-699x699.png', 1, 1),
-('PR000006', 'BR002', 'Casio AEQ-110W-3AVDF – Nam – Kính Nhựa – Quartz (Pin) – Mặt Số 46.6mm, Bộ Bấm Giờ, Chống Nước 10ATM', 1581000, 1281000, 0, 'Đồng hồ điện tử', 'Đen', 'Nam', 'Mẫu Casio AEQ-110W-3AVDF thiết kế phong cách dành cho các tín đồ yêu thích các hoạt động thể thao ngoài trời hoặc dân đi phượt với nền mặt số điện tử đi kèm đa chức năng cùng khả năng chịu nước 10 ATM.', '118_AEQ-110W-3AVDF-699x699.png', 1, 1),
-('PR000007', 'BR003', 'Citizen BM7370-89E – Kính Sapphire – Eco-Drive (Năng Lượng Ánh Sáng) – Dây Kim Loại', 8000000, 7000000, 0, 'Đồng hồ cơ', 'Bạch kim', 'Unisex', 'Mẫu Citizen BM7370-89E ấn tượng một vẻ ngoài mạnh mẽ với tổng thể vỏ máy cùng dây đeo bằng kim loại bao phủ tông màu bạc sang trọng hiện khi đồng hồ được trang bị công nghệ Eco-Drive (Năng Lượng Ánh Sáng).', 'BM7370-89E-699x699.png', 1, 1),
-('PR000008', 'BR003', 'Citizen AN8195-58E – Quartz (Pin) – Mặt Số 42mm, Kính Cứng, Chống Nước 10ATM', 5985000, 4985000, 0, 'Đồng hồ cơ', 'Đen', 'Unisex', 'Mẫu Citizen AN8195-58E thiết kế 3 núm vặn điều chỉnh các tính năng Chronograph (đo thời gian) hiện thị trên nền mặt số đen size 42mm.', 'AN8195-58E-699x699.png', 1, 1),
-('PR000009', 'BR003', 'Citizen NP1020-15A – Kính Sapphire – Automatic (Tự Động) – Dây Da', 8450000, 7450000, 0, 'Đồng hồ cơ', 'Bạc', 'Unisex', 'Vẻ ngoài quý ông lịch lãm với mẫu Citizen NP1020-15A với thiết kế độc đáo cùng ô chân kính trong suốt phô diễn ra 1 phần bên trong của bộ máy cơ chứa đựng cả một trải nghiệm đầy nam tính.', '138_NP1020-15A-699x699.png', 1, 1),
-('PR000010', 'BR004', 'Orient Sun And Moon RA-AS0103A10B – Nam – Automatic (Tự Động) – Mặt Số 41.5mm, Trữ Cót 40 Giờ, Hacking Second.', 11490000, 10490000, 0, 'Đồng hồ cơ', 'Xanh dương', 'Nam', 'Mẫu Orient RA-AS0103A10B phiên bản máy cơ thiết kế kiểu dáng cơ lộ tim tạo nên vẻ độc đáo trên nền mặt số với kích thước 41mm.', 'RA-AS0103A10B-699x699.png', 1, 1),
-('PR000011', 'BR004', 'Orient Bambino FAC08003A0 – Nam – Automatic (Tự Động) – Mặt Số 42mm, Kính Cứng Cong, Trữ Cót 40 Giờ', 7510000, 6510000, 0, 'Đồng hồ cơ', 'Nâu', 'Nam', 'Đồng hồ nam Orient FAC08003A0 thiết kế với phong cách cổ điển, kim chỉ và vạch số được phủ đồng trên nền màu xám mạnh mẽ, kết hợp với dây đeo bằng da màu nâu tạo nên vẻ lịch lãm cho phái mạnh.', 'FAC08003A0-1-699x699.png', 1, 1),
-('PR000012', 'BR004', 'Orient Nam – Quartz (Pin) – Kính Sapphire – Dây Da (FGW01004A0)', 4160000, 3160000, 0, 'Đồng hồ cơ', 'Nâu', 'Nam', 'Đồng hồ Orient FGW01004A0 dành cho nam giới với mặt kính Sapphire chống trầy xước, mặt nền đen trắng hài hòa, còn có 2 kim chỉ cùng 1 lịch ngày, dây da có vân.', 'FGW01004A0-699x699.png', 1, 1),
-('PR000013', 'BR005', 'Apple Watch SE Nhôm 2022 GPS - 40mm', 8990000, 7990000, 5, 'Đồng hồ thông minh', 'Đen', 'Unisex', 'Apple Watch SE 2022 Nhôm GPS: Các tính năng mới hoàn toàn. Giá vẫn nhẹ nhàng. Các tính năng thiết yếu giúp bạn luôn kết nối, năng động, khỏe mạnh, và an toàn.', '0011842_midnight_550.png', 1, 1),
-('PR000014', 'BR005', 'Apple Watch Ultra LTE 49mm Ocean Band Vàng', 23990000, 21990000, 5, 'Đồng hồ thông minh', 'Trắng', 'Nữ', 'Các tính năng và cảm biến chuyên dụng, cùng với ba dây đeo mới được thiết kế cho các hoạt động khám phá, phiêu lưu, và rèn luyện sức bền.', '0001670_white_550.png', 1, 1),
-('PR000015', 'BR005', 'Apple Watch 8 45mm nhôm GPS + Cellular Đỏ', 15990000, 14990000, 5, 'Đồng hồ thông minh', 'Đỏ', 'Unisex', 'Apple Watch 8 45mm (GPS + Cellular) sở hữu các cảm biến và ứng dụng sức khỏe tối tân, vì vậy bạn có thể đo điện tâm đồ (ECG),1 đo nhịp tim và nồng độ oxy trong máu,2 theo dõi sự thay đổi nhiệt độ3 để nắm bắt thông tin chuyên sâu về chu kỳ kinh nguyệt.4 Các tính năng Phát Hiện Va Chạm, theo dõi giai đoạn ngủ và các chỉ số tập luyện chuyên sâu giúp bạn luôn năng động, khỏe mạnh, an toàn, và kết nối.', '0014063_apple-watch-series-8-45mm-nhom-gps-cellular-sao-chep_550.png', 1, 1),
-('PR000016', 'BR001', 'SEIKO 5 FIELD SPORTS STYLE SRPD77K1 – NAM – AUTOMATIC (TỰ ĐỘNG) – MẶT SỐ 42.5MM, CHỐNG NƯỚC 5ATM, BỘ MÁY IN-HOUSE', 8090000, 7090000, 0, 'Đồng hồ cơ', 'Xanh lá', 'Nam', 'Mẫu Seiko SRPD77K1 với phần vỏ máy cơ bề dày 13mm đi kèm khả năng chống nước lên đến 10ATM, vẻ ngoài nam tính không kém cạnh thời trang với mẫu dây vải tone xanh.', 'SRPG33K1-699x699.png', 1, 1),
-('PR000017', 'BR002', 'CASIO ECB-900DB-1BDR – NAM – SOLAR (NĂNG LƯỢNG ÁNH SÁNG) – DÂY KIM LOẠI', 6909000, 5909000, 0, 'Đồng hồ cơ', 'Xanh đen', 'Nam', 'Mẫu Casio ECB-900DB-1BDR tính năng vượt trội pin được trang bị công nghệ Solar (Năng lượng ánh sáng), Edifice phiên bản đặc biệt mặt số kim chỉ kết hợp ô số điện tử.', '52_ECB-900DB-1BDR-699x699.png', 1, 1),
-('PR000018', 'BR004', 'Orient SK RA-AA0B01G19B – Nam – Automatic (Tự Động) – Mặt Số 41.7mm, Trữ Cót 40 Giờ, Hacking Second', 7909000, 6909000, 2, 'Đồng hồ cơ', 'Vàng đen', 'Nam', 'Mẫu Orient RA-AA0B01G19B phiên bản mạ vàng trên mẫu kim chỉ trên mặt số size 41.7mm đi kèm thiết kế 2 núm vặn điều chỉnh, vỏ máy kim loại mạ bạc kiểu dáng dày dặn của bô máy cơ.', 'AQ-S810W-1A4VDF-699x699.png', 1, 1),
-('PR000019', 'BR003', 'CITIZEN BI5054-53L – NAM – QUARTZ (PIN) – DÂY KIM LOẠI', 4270000, 3270000, 1, 'Đồng hồ cơ', 'Xanh đen', 'Nam', 'Mẫu Citizen BI5054-53L không khỏi ngước nhìn khi mang trên mình một vẻ ngoài mặt số tông nền xanh của sự trẻ trung kèm theo vạch số tạo hình dày dặn đầy vẻ nam tính.', '177_BI5054-53L-699x699.png', 1, 1),
-('PR000020', 'BR003', 'Citizen AR1135-10E – Nam – Eco-Drive (Năng Lượng Ánh Sáng) – Mặt Số 39mm, Kính Sapphire, Chống Nước 3ATM', 6900000, 5900000, 2, 'Đồng hồ cơ', 'Đen', 'Nam', 'Mẫu Citizen AR1135-10E nổi bật với đồng hồ sử dụng công nghệ hiện đại Eco-Drive (Năng Lượng Ánh Sáng), ấn tượng với thiết kế đầy nam tính kết hợp giữa vỏ máy cùng dây đeo bằng da đen đầy lịch lãm.', 'AR1135-10E-699x699.png', 1, 1),
-('PR000021', 'BR003', 'Citizen Nam – Eco-Drive (Năng Lượng Ánh Sáng) – Kính Sapphire – Dây Da (AR1113-12A) Được xếp hạng', 8530000, 7530000, 0, 'Đồng hồ cơ', 'Trắng', 'Nam', 'Đồng hồ nam Eco-Drive AR1113-12A thuộc dòng đồng hồ siêu mỏng, mặt số tròn màu trắng viền vàng, dây da nâu đen có vân, đồng hồ 2 kim với vẻ ngoài giản dị.', 'AR1113-12A-699x699.png', 1, 1),
-('PR000022', 'BR003', 'Citizen BM9012-02A  – Kính Sapphire – Eco-Drive (Năng Lượng Ánh Sáng) – Dây Da', 6900000, 5900000, 0, 'Đồng hồ cơ', 'Trắng', 'Unisex', 'Vẻ ngoài quý ông lịch lãm với Citizen BM9012-02A với mẫu dây da nâu có vân sang trọng quý phái khi kết hợp cùng các chi tiết vỏ máy cho đến vạch số vàng hồng.', '159_BM9012-02A-699x699.png', 1, 1),
-('PR000023', 'BR003', 'Citizen BI5006-81P – Quartz (Pin) – Mặt Số 39 Mm, Lịch Ngày, Chống Nước 5 ATM', 4985000, 3985000, 0, 'Đồng hồ cơ', 'Vàng trắng', 'Unisex', 'Mẫu Citizen BI5006-81P sang trọng và lịch lãm là yếu tố tạo nên khí chất đàn ông với thiết kế các chi tiết vạch số tạo nét mỏng của sự tinh tế được bao phủ tông màu vàng đầy cuốn hút.', '86_BI5006-81P-699x699.png', 1, 1),
-('PR000024', 'BR003', 'Citizen ER0210-55Y – Nữ – Quartz (Pin) – Mặt Số 30mm, Kính Cứng, Khảm Xà Cừ', 3785000, 2785000, 0, 'Đồng hồ cơ', 'Bạch kim', 'Nữ', 'Mẫu Citizen ER0210-55Y mặt số hồng size 30mm phiên bản tone màu xà cừ thời trang, nổi bật với thiết kế sang trọng đính các viên pha lê trên phần vỏ viền đồng hồ.', '18_ER0210-55Y-699x699.png', 1, 1),
-('PR000025', 'BR003', 'Citizen ED8180-52X – Nữ – Quartz (Pin) – Mặt Số 33mm, Kính Cứng, Chống Nước 3atm', 4855000, 3855000, 0, 'Đồng hồ cơ', 'Trắng', 'Nữ', 'Mẫu Citizen ED8180-52X phiên bản sang trọng 11 viên đá pha lê được đính tương ứng với các múi giờ hiện thị trên nền mặt số kích thước vừa vặn không quá lớn 33mm.', 'ED8180-52X.png', 1, 1);
+INSERT INTO `product` (`ProductID`, `BrandID`, `ProductName`, `PriceToSell`, `ImportPrice`, `Discount`, `Model`, `Color`, `Gender`, `Description`, `ProductImg`, `Status`, `CanDel`, `Quantity`) VALUES
+('PR000001', 'BR001', 'Seiko 5 Field Sports Style SRPG29K1 – Nam – Automatic (Tự Động) – Mặt Số 39.4mm, Chống Nước 10ATM, Bộ Máy In-House', 269.62, 231.59, 0, 'Đồng hồ cơ', 'Bạc', 'Nam', 'Mẫu Seiko SRPG29K1 thiết kế đơn giản chức năng 3 kim, chi tiết kim chỉ cùng các cọc chấm tròn nhỏ được phủ dạ quang trên nền mặt số xanh 39.4mm.', 'SRPG29K1-699x699.png', 1, 0, 20),
+('PR000002', 'BR001', 'Seiko 5 Field Specialist Style SRPG41K1 – Nam – Automatic (Tự Động) – Mặt Số 39.4mm, Chống Nước 10ATM, Bộ Máy In-House', 306.12, 268.1, 0, 'Đồng hồ cơ', 'Đen', 'Nam', 'Mẫu Seiko SRPG41K1 thiết kế đơn giản chức năng 3 kim, chi tiết kim chỉ cùng các cọc chấm nhỏ được phủ dạ quang trên nền mặt số kích thước 39.4mm.', 'SRPG41K1.png', 1, 1, 34),
+('PR000003', 'BR001', 'Seiko SSB351P1 – Nam – Kính Cứng – Quartz (Pin) – Mặt Số 43.9mm, Dạ Quang, Chống Nước 10ATM.', 242.43, 204.4, 0, 'Đồng hồ cơ', 'Đen', 'Nam', 'Mẫu Seiko SSB351P1 phiên bản nam tính với tính năng Chronograph (đo thời gian) tạo nên kiểu dáng đồng hồ 6 kim trên nền mặt số lớn kích thước 43.9mm.', 'SSB351P1-699x699.png', 1, 1, 31),
+('PR000004', 'BR002', 'Casio EFV-550L-1AVUDF – Quartz (Pin) – Mặt Số 47mm, Kính Cứng, Chống Nước 10ATM', 134.2, 96.17, 0, 'Đồng hồ cơ', 'Đen', 'Unisex', 'Mẫu Casio EFV-550L-1AVUDF mang đến cho phái mạnh vẻ ngoài lịch lãm nhưng cũng không kém phần trẻ trung đặc trưng thuộc dòng Edifice với kiểu dáng đồng hồ 6 kim đi kèm tính năng đo thời gian Chronograph.', '68_EFV-550L-1AVUDF-1-699x699.png', 1, 0, 0),
+('PR000005', 'BR002', 'Casio MTP-1302D-7A1VDF – Nữ – Quartz (Pin) – Mặt Số 38.5mm, Kính Cứng, Chống Nước 5ATM.', 51.22, 38.03, 0, 'Đồng hồ cơ', 'Bạch kim', 'Nữ', 'Đồng hồ Casio MTP-1302D-7A1VDF có kiểu dáng truyền thống với mặt số tròn, niềng được tạo khía nổi bật quanh nền trắng mặt số, kim chỉ và vạch số được mạ bạc trên nền số.', '35_MTP-1302D-7A1VDF-699x699.png', 1, 0, 14),
+('PR000006', 'BR002', 'Casio AEQ-110W-3AVDF – Nam – Kính Nhựa – Quartz (Pin) – Mặt Số 46.6mm, Bộ Bấm Giờ, Chống Nước 10ATM', 60.12, 48.71, 0, 'Đồng hồ điện tử', 'Đen', 'Nam', 'Mẫu Casio AEQ-110W-3AVDF thiết kế phong cách dành cho các tín đồ yêu thích các hoạt động thể thao ngoài trời hoặc dân đi phượt với nền mặt số điện tử đi kèm đa chức năng cùng khả năng chịu nước 10 ATM.', '118_AEQ-110W-3AVDF-699x699.png', 1, 1, 50),
+('PR000007', 'BR003', 'Citizen BM7370-89E – Kính Sapphire – Eco-Drive (Năng Lượng Ánh Sáng) – Dây Kim Loại', 304.22, 266.2, 0, 'Đồng hồ cơ', 'Bạch kim', 'Unisex', 'Mẫu Citizen BM7370-89E ấn tượng một vẻ ngoài mạnh mẽ với tổng thể vỏ máy cùng dây đeo bằng kim loại bao phủ tông màu bạc sang trọng hiện khi đồng hồ được trang bị công nghệ Eco-Drive (Năng Lượng Ánh Sáng).', 'BM7370-89E-699x699.png', 1, 1, 50),
+('PR000008', 'BR003', 'Citizen AN8195-58E – Quartz (Pin) – Mặt Số 42mm, Kính Cứng, Chống Nước 10ATM', 227.6, 189.57, 0, 'Đồng hồ cơ', 'Đen', 'Unisex', 'Mẫu Citizen AN8195-58E thiết kế 3 núm vặn điều chỉnh các tính năng Chronograph (đo thời gian) hiện thị trên nền mặt số đen size 42mm.', 'AN8195-58E-699x699.png', 1, 1, 50),
+('PR000009', 'BR003', 'Citizen NP1020-15A – Kính Sapphire – Automatic (Tự Động) – Dây Da', 321.34, 283.31, 0, 'Đồng hồ cơ', 'Bạc', 'Unisex', 'Vẻ ngoài quý ông lịch lãm với mẫu Citizen NP1020-15A với thiết kế độc đáo cùng ô chân kính trong suốt phô diễn ra 1 phần bên trong của bộ máy cơ chứa đựng cả một trải nghiệm đầy nam tính.', '138_NP1020-15A-699x699.png', 1, 1, 60),
+('PR000010', 'BR004', 'Orient Sun And Moon RA-AS0103A10B – Nam – Automatic (Tự Động) – Mặt Số 41.5mm, Trữ Cót 40 Giờ, Hacking Second.', 436.94, 398.91, 0, 'Đồng hồ cơ', 'Xanh dương', 'Nam', 'Mẫu Orient RA-AS0103A10B phiên bản máy cơ thiết kế kiểu dáng cơ lộ tim tạo nên vẻ độc đáo trên nền mặt số với kích thước 41mm.', 'RA-AS0103A10B-699x699.png', 1, 1, 23),
+('PR000011', 'BR004', 'Orient Bambino FAC08003A0 – Nam – Automatic (Tự Động) – Mặt Số 42mm, Kính Cứng Cong, Trữ Cót 40 Giờ', 285.59, 247.56, 0, 'Đồng hồ cơ', 'Nâu', 'Nam', 'Đồng hồ nam Orient FAC08003A0 thiết kế với phong cách cổ điển, kim chỉ và vạch số được phủ đồng trên nền màu xám mạnh mẽ, kết hợp với dây đeo bằng da màu nâu tạo nên vẻ lịch lãm cho phái mạnh.', 'FAC08003A0-1-699x699.png', 1, 1, 34),
+('PR000012', 'BR004', 'Orient Nam – Quartz (Pin) – Kính Sapphire – Dây Da (FGW01004A0)', 158.2, 120.17, 0, 'Đồng hồ cơ', 'Nâu', 'Nam', 'Đồng hồ Orient FGW01004A0 dành cho nam giới với mặt kính Sapphire chống trầy xước, mặt nền đen trắng hài hòa, còn có 2 kim chỉ cùng 1 lịch ngày, dây da có vân.', 'FGW01004A0-699x699.png', 1, 1, 48),
+('PR000013', 'BR005', 'Apple Watch SE Nhôm 2022 GPS - 40mm', 341.87, 303.84, 5, 'Đồng hồ thông minh', 'Đen', 'Unisex', 'Apple Watch SE 2022 Nhôm GPS: Các tính năng mới hoàn toàn. Giá vẫn nhẹ nhàng. Các tính năng thiết yếu giúp bạn luôn kết nối, năng động, khỏe mạnh, và an toàn.', '0011842_midnight_550.png', 1, 1, 16),
+('PR000014', 'BR005', 'Apple Watch Ultra LTE 49mm Ocean Band Vàng', 912.29, 836.23, 5, 'Đồng hồ thông minh', 'Trắng', 'Nữ', 'Các tính năng và cảm biến chuyên dụng, cùng với ba dây đeo mới được thiết kế cho các hoạt động khám phá, phiêu lưu, và rèn luyện sức bền.', '0001670_white_550.png', 1, 1, 8),
+('PR000015', 'BR005', 'Apple Watch 8 45mm nhôm GPS + Cellular Đỏ', 608.07, 570.04, 5, 'Đồng hồ thông minh', 'Đỏ', 'Unisex', 'Apple Watch 8 45mm (GPS + Cellular) sở hữu các cảm biến và ứng dụng sức khỏe tối tân, vì vậy bạn có thể đo điện tâm đồ (ECG),1 đo nhịp tim và nồng độ oxy trong máu,2 theo dõi sự thay đổi nhiệt độ3 để nắm bắt thông tin chuyên sâu về chu kỳ kinh nguyệt.4 Các tính năng Phát Hiện Va Chạm, theo dõi giai đoạn ngủ và các chỉ số tập luyện chuyên sâu giúp bạn luôn năng động, khỏe mạnh, an toàn, và kết nối.', '0014063_apple-watch-series-8-45mm-nhom-gps-cellular-sao-chep_550.png', 1, 1, 36),
+('PR000016', 'BR001', 'SEIKO 5 FIELD SPORTS STYLE SRPD77K1 – NAM – AUTOMATIC (TỰ ĐỘNG) – MẶT SỐ 42.5MM, CHỐNG NƯỚC 5ATM, BỘ MÁY IN-HOUSE', 307.65, 269.62, 0, 'Đồng hồ cơ', 'Xanh lá', 'Nam', 'Mẫu Seiko SRPD77K1 với phần vỏ máy cơ bề dày 13mm đi kèm khả năng chống nước lên đến 10ATM, vẻ ngoài nam tính không kém cạnh thời trang với mẫu dây vải tone xanh.', 'SRPG33K1-699x699.png', 1, 1, 0),
+('PR000017', 'BR002', 'CASIO ECB-900DB-1BDR – NAM – SOLAR (NĂNG LƯỢNG ÁNH SÁNG) – DÂY KIM LOẠI', 262.73, 224.71, 0, 'Đồng hồ cơ', 'Xanh đen', 'Nam', 'Mẫu Casio ECB-900DB-1BDR tính năng vượt trội pin được trang bị công nghệ Solar (Năng lượng ánh sáng), Edifice phiên bản đặc biệt mặt số kim chỉ kết hợp ô số điện tử.', '52_ECB-900DB-1BDR-699x699.png', 1, 1, 0),
+('PR000018', 'BR004', 'Orient SK RA-AA0B01G19B – Nam – Automatic (Tự Động) – Mặt Số 41.7mm, Trữ Cót 40 Giờ, Hacking Second', 300.76, 262.73, 2, 'Đồng hồ cơ', 'Vàng đen', 'Nam', 'Mẫu Orient RA-AA0B01G19B phiên bản mạ vàng trên mẫu kim chỉ trên mặt số size 41.7mm đi kèm thiết kế 2 núm vặn điều chỉnh, vỏ máy kim loại mạ bạc kiểu dáng dày dặn của bô máy cơ.', 'AQ-S810W-1A4VDF-699x699.png', 1, 1, 0),
+('PR000019', 'BR003', 'CITIZEN BI5054-53L – NAM – QUARTZ (PIN) – DÂY KIM LOẠI', 162.38, 124.35, 1, 'Đồng hồ cơ', 'Xanh đen', 'Nam', 'Mẫu Citizen BI5054-53L không khỏi ngước nhìn khi mang trên mình một vẻ ngoài mặt số tông nền xanh của sự trẻ trung kèm theo vạch số tạo hình dày dặn đầy vẻ nam tính.', '177_BI5054-53L-699x699.png', 1, 1, 0),
+('PR000020', 'BR003', 'Citizen AR1135-10E – Nam – Eco-Drive (Năng Lượng Ánh Sáng) – Mặt Số 39mm, Kính Sapphire, Chống Nước 3ATM', 262.39, 224.36, 2, 'Đồng hồ cơ', 'Đen', 'Nam', 'Mẫu Citizen AR1135-10E nổi bật với đồng hồ sử dụng công nghệ hiện đại Eco-Drive (Năng Lượng Ánh Sáng), ấn tượng với thiết kế đầy nam tính kết hợp giữa vỏ máy cùng dây đeo bằng da đen đầy lịch lãm.', 'AR1135-10E-699x699.png', 1, 1, 0),
+('PR000021', 'BR003', 'Citizen Nam – Eco-Drive (Năng Lượng Ánh Sáng) – Kính Sapphire – Dây Da (AR1113-12A) Được xếp hạng', 324.38, 286.35, 0, 'Đồng hồ cơ', 'Trắng', 'Nam', 'Đồng hồ nam Eco-Drive AR1113-12A thuộc dòng đồng hồ siêu mỏng, mặt số tròn màu trắng viền vàng, dây da nâu đen có vân, đồng hồ 2 kim với vẻ ngoài giản dị.', 'AR1113-12A-699x699.png', 1, 1, 10),
+('PR000022', 'BR003', 'Citizen BM9012-02A  – Kính Sapphire – Eco-Drive (Năng Lượng Ánh Sáng) – Dây Da', 262.39, 224.36, 0, 'Đồng hồ cơ', 'Trắng', 'Unisex', 'Vẻ ngoài quý ông lịch lãm với Citizen BM9012-02A với mẫu dây da nâu có vân sang trọng quý phái khi kết hợp cùng các chi tiết vỏ máy cho đến vạch số vàng hồng.', '159_BM9012-02A-699x699.png', 1, 1, 7),
+('PR000023', 'BR003', 'Citizen BI5006-81P – Quartz (Pin) – Mặt Số 39 Mm, Lịch Ngày, Chống Nước 5 ATM', 189.57, 151.54, 0, 'Đồng hồ cơ', 'Vàng trắng', 'Unisex', 'Mẫu Citizen BI5006-81P sang trọng và lịch lãm là yếu tố tạo nên khí chất đàn ông với thiết kế các chi tiết vạch số tạo nét mỏng của sự tinh tế được bao phủ tông màu vàng đầy cuốn hút.', '86_BI5006-81P-699x699.png', 1, 1, 6),
+('PR000024', 'BR003', 'Citizen ER0210-55Y – Nữ – Quartz (Pin) – Mặt Số 30mm, Kính Cứng, Khảm Xà Cừ', 143.94, 105.91, 0, 'Đồng hồ cơ', 'Bạch kim', 'Nữ', 'Mẫu Citizen ER0210-55Y mặt số hồng size 30mm phiên bản tone màu xà cừ thời trang, nổi bật với thiết kế sang trọng đính các viên pha lê trên phần vỏ viền đồng hồ.', '18_ER0210-55Y-699x699.png', 1, 1, 6),
+('PR000025', 'BR003', 'Citizen ED8180-52X – Nữ – Quartz (Pin) – Mặt Số 33mm, Kính Cứng, Chống Nước 3atm', 184.63, 146.6, 0, 'Đồng hồ cơ', 'Trắng', 'Nữ', 'Mẫu Citizen ED8180-52X phiên bản sang trọng 11 viên đá pha lê được đính tương ứng với các múi giờ hiện thị trên nền mặt số kích thước vừa vặn không quá lớn 33mm.', 'ED8180-52X.png', 1, 1, 5),
+('PR000026', 'BR007', 'Diamond D DM2608B5iG - Đồng hồ Nữ - Size mặt 25 mm - Sapphire - Quartz/Pin - Chịu nước 3 ATM', 150, 100, 0, 'Đồng hồ thông minh', 'Bạc', 'Nữ', 'Đồng hồ nam máy cơ là một phụ kiện thời trang quan trọng, thể hiện phong cách và cá nhân của mỗi người đàn ông. Trên thị trường, có rất nhiều lựa chọn đồng hồ nam máy cơ với mức giá phù hợp với ngân sách của mọi khách hàng. Khi chọn mua một chiếc đồng hồ nam, quan trọng là tìm hiểu về các thương hiệu uy tín như Lobinni, I&W Carnival, Kassaw, Poniger, Teintop... Những thương hiệu này nổi tiếng với chất lượng, độ chính xác và độ bền của máy móc, cùng với thiết kế đa dạng và phong cách.\r\n\r\nMáy cơ tự động và máy pin là hai loại máy thường được sử dụng trong đồng hồ nam. Máy cơ tự động hoạt động bằng chuyển động tự năng từ cử động của cổ tay, trong khi máy pin hoạt động nhờ pin điện tử. Cả hai loại máy đều có ưu điểm riêng và đáp ứng tốt nhu cầu sử dụng hàng ngày.\r\n\r\nPhong cách của đồng hồ nam cũng đa dạng, từ thiết kế cổ điển và sang trọng đến phong cách thể thao và hiện đại. Các mẫu đồng hồ có mặt số tròn, vuông hoặc chữ nhật, và có nhiều lựa chọn về vỏ đồng hồ và dây đeo. Dây đeo có thể là da, thép không gỉ, cao su hoặc vải, tạo nên sự đa dạng và sự linh hoạt trong việc phối đồ.\r\n\r\nNgoài ra, một số chiếc đồng hồ nam có tính năng bổ sung như dạ quang, bộ đếm ngược, chống nước và lịch. Các tính năng này mang lại sự tiện ích và linh hoạt trong việc sử dụng đồng hồ.\r\n\r\nVới mức giá phù hợp với ngân sách, bạn có thể tìm thấy một chiếc đồng hồ nam máy cơ chất lượng và phù hợp với phong cách cá nhân. Đồng hồ nam không chỉ là một phụ kiện thời trang, mà còn là một biểu tượng của sự lịch lãm và đẳng cấp.', '50.jpg', 1, 0, 11);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `product_quantity`
+-- Cấu trúc bảng cho bảng `product_quantity`
 --
 
 CREATE TABLE `product_quantity` (
@@ -317,15 +352,31 @@ CREATE TABLE `product_quantity` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `product_quantity`
+-- Đang đổ dữ liệu cho bảng `product_quantity`
 --
 
 INSERT INTO `product_quantity` (`ProductID`, `Date`, `Quantity`) VALUES
 ('PR000001', '2023-05-16 12:53:57', 21),
+('PR000001', '2025-12-27 02:26:03', 19),
+('PR000001', '2025-12-27 02:30:36', 18),
+('PR000001', '2025-12-27 02:53:44', 17),
+('PR000001', '2025-12-27 02:53:53', 18),
+('PR000001', '2025-12-27 03:08:24', 19),
+('PR000001', '2025-12-27 03:16:40', 17),
+('PR000001', '2025-12-27 03:26:54', 18),
+('PR000001', '2025-12-27 04:12:04', 20),
+('PR000001', '2025-12-27 04:12:34', 18),
+('PR000001', '2025-12-27 04:12:35', 20),
+('PR000001', '2025-12-27 04:17:20', 21),
+('PR000001', '2025-12-27 05:48:00', 20),
+('PR000001', '2025-12-27 05:50:58', 17),
+('PR000001', '2025-12-27 06:23:15', 20),
 ('PR000002', '2023-05-16 07:35:17', 34),
 ('PR000003', '2023-05-15 16:41:13', 31),
 ('PR000004', '2023-04-24 20:13:35', 1),
+('PR000004', '2025-12-27 02:12:22', 0),
 ('PR000005', '2023-04-24 20:13:35', 15),
+('PR000005', '2025-12-27 02:26:03', 14),
 ('PR000006', '2023-04-24 20:13:35', 50),
 ('PR000007', '2023-04-24 20:13:35', 50),
 ('PR000008', '2023-04-24 20:13:35', 50),
@@ -341,12 +392,17 @@ INSERT INTO `product_quantity` (`ProductID`, `Date`, `Quantity`) VALUES
 ('PR000022', '2023-05-15 16:43:01', 7),
 ('PR000023', '2023-05-15 16:43:01', 6),
 ('PR000024', '2023-05-15 16:43:01', 6),
-('PR000025', '2023-05-15 16:44:26', 5);
+('PR000025', '2023-05-15 16:44:26', 5),
+('PR000026', '2025-12-27 03:54:24', 0),
+('PR000026', '2025-12-27 04:00:17', 10),
+('PR000026', '2025-12-27 04:12:04', 11),
+('PR000026', '2025-12-27 04:12:34', 10),
+('PR000026', '2025-12-27 04:12:35', 11);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `receivingdetail`
+-- Cấu trúc bảng cho bảng `receivingdetail`
 --
 
 CREATE TABLE `receivingdetail` (
@@ -357,7 +413,18 @@ CREATE TABLE `receivingdetail` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Triggers `receivingdetail`
+-- Đang đổ dữ liệu cho bảng `receivingdetail`
+--
+
+INSERT INTO `receivingdetail` (`InID`, `ProductID`, `Quantity`, `ReceivingUnitPrice`) VALUES
+('IN00000001', 'PR000001', 1, 231.59),
+('IN00000002', 'PR000026', 10, 100),
+('IN00000003', 'PR000001', 2, 231.59),
+('IN00000003', 'PR000026', 1, 100),
+('IN00000004', 'PR000001', 1, 231.59);
+
+--
+-- Bẫy `receivingdetail`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_receivingdetail_afterdel` AFTER DELETE ON `receivingdetail` FOR EACH ROW update `product` set `CanDel` = 1 where ProductID = old.ProductID and canDel = 0 and ProductID not in (select distinct ProductID from `order_line` where ProductID = old.ProductID) and ProductID not in (select distinct ProductID from `receivingdetail` where ProductID = old.ProductID)
@@ -367,7 +434,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `supplier`
+-- Cấu trúc bảng cho bảng `supplier`
 --
 
 CREATE TABLE `supplier` (
@@ -380,7 +447,7 @@ CREATE TABLE `supplier` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `supplier`
+-- Đang đổ dữ liệu cho bảng `supplier`
 --
 
 INSERT INTO `supplier` (`SupplierID`, `Name`, `NumberPhone`, `Address`, `Email`, `Status`) VALUES
@@ -397,7 +464,7 @@ INSERT INTO `supplier` (`SupplierID`, `Name`, `NumberPhone`, `Address`, `Email`,
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user`
+-- Cấu trúc bảng cho bảng `user`
 --
 
 CREATE TABLE `user` (
@@ -414,7 +481,7 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `user`
+-- Đang đổ dữ liệu cho bảng `user`
 --
 
 INSERT INTO `user` (`UserID`, `FullName`, `NumberPhone`, `Email`, `Password`, `HouseRoadAddress`, `Ward`, `District`, `Province`, `Status`) VALUES
@@ -429,12 +496,13 @@ INSERT INTO `user` (`UserID`, `FullName`, `NumberPhone`, `Email`, `Password`, `H
 ('US000009', 'Phạm Cẩm Thơ', '0976548762', 'camtho234@gmail.com', '123456', '521/91E CMT8', 'Phường 13', 'Quận 10', 'Thành phố Hồ Chí Minh', 1),
 ('US000010', 'Đào Công Trứ', '0327794829', 'congtru2865@gmail.com', '123456', 'Đường 19/5', 'Xã Tân Ân', 'Huyện Cần Đước', 'Tỉnh Long An', 1),
 ('US000011', 'Phúc Ân', '0123456789', 'pham27282@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', '0123', '', '', '', 1),
-('US000012', 'Bình', '0123457689', 'ggbinh123@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '123', '', '', '', 1);
+('US000012', 'Bình', '0123457689', 'ggbinh123@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '123', '', '', '', 1),
+('US000013', 'Anh', '0323987789', 'Anh@gmail.com', '6ae6e2434116e78de40e24b147b814f5aa5ce071', '123', 'Phường Trúc Bạch', 'Quận Ba Đình', 'Thành phố Hà Nội', 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `voucher`
+-- Cấu trúc bảng cho bảng `voucher`
 --
 
 CREATE TABLE `voucher` (
@@ -448,7 +516,7 @@ CREATE TABLE `voucher` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `voucher`
+-- Đang đổ dữ liệu cho bảng `voucher`
 --
 
 INSERT INTO `voucher` (`VoucherID`, `VoucherName`, `Discount`, `Unit`, `DateFrom`, `DateTo`, `Status`) VALUES
@@ -460,59 +528,60 @@ INSERT INTO `voucher` (`VoucherID`, `VoucherName`, `Discount`, `Unit`, `DateFrom
 ('VO006', 'Ngày Quốc Tế Phụ Nữ 8/3', 3, '%', '2022-03-08', '2022-03-08', 1),
 ('VO007', 'Ngày sinh của Bác Hồ', 3, '%', '2022-05-19', '2022-05-19', 1),
 ('VO008', 'Lễ Giáng Sinh', 3, '%', '2022-12-15', '2022-12-25', 1),
-('VO009', 'Quốc tế lao động', 3, '%', '2022-05-01', '2022-05-01', 1);
+('VO009', 'Quốc tế lao động', 3, '%', '2022-05-01', '2022-05-01', 1),
+('VO010', 'Test', 2, '%', '2025-12-24', '2026-01-11', 1);
 
 --
--- Indexes for dumped tables
+-- Chỉ mục cho các bảng đã đổ
 --
 
 --
--- Indexes for table `admin`
+-- Chỉ mục cho bảng `admin`
 --
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`AdminID`);
 
 --
--- Indexes for table `brand`
+-- Chỉ mục cho bảng `brand`
 --
 ALTER TABLE `brand`
   ADD PRIMARY KEY (`BrandID`);
 
 --
--- Indexes for table `cart`
+-- Chỉ mục cho bảng `cart`
 --
 ALTER TABLE `cart`
   ADD PRIMARY KEY (`UserID`,`ProductID`),
   ADD KEY `FK_ProductID_Cart` (`ProductID`);
 
 --
--- Indexes for table `contacts`
+-- Chỉ mục cho bảng `contacts`
 --
 ALTER TABLE `contacts`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `inventoryreceivingvoucher`
+-- Chỉ mục cho bảng `inventoryreceivingvoucher`
 --
 ALTER TABLE `inventoryreceivingvoucher`
   ADD PRIMARY KEY (`InID`),
   ADD KEY `FK_SupplierID` (`SupplierID`);
 
 --
--- Indexes for table `manager`
+-- Chỉ mục cho bảng `manager`
 --
 ALTER TABLE `manager`
   ADD PRIMARY KEY (`ManagerID`),
   ADD UNIQUE KEY `Email` (`Email`);
 
 --
--- Indexes for table `online_users`
+-- Chỉ mục cho bảng `online_users`
 --
 ALTER TABLE `online_users`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `order`
+-- Chỉ mục cho bảng `order`
 --
 ALTER TABLE `order`
   ADD PRIMARY KEY (`OrderID`),
@@ -522,103 +591,103 @@ ALTER TABLE `order`
   ADD KEY `FK_Order_PaymentID` (`PaymentID`);
 
 --
--- Indexes for table `orderstatus`
+-- Chỉ mục cho bảng `orderstatus`
 --
 ALTER TABLE `orderstatus`
   ADD PRIMARY KEY (`StatusID`);
 
 --
--- Indexes for table `order_line`
+-- Chỉ mục cho bảng `order_line`
 --
 ALTER TABLE `order_line`
   ADD PRIMARY KEY (`OrderID`,`ProductID`),
   ADD KEY `FK_OrderLine_ProductID` (`ProductID`);
 
 --
--- Indexes for table `payment`
+-- Chỉ mục cho bảng `payment`
 --
 ALTER TABLE `payment`
   ADD PRIMARY KEY (`PaymentID`);
 
 --
--- Indexes for table `product`
+-- Chỉ mục cho bảng `product`
 --
 ALTER TABLE `product`
   ADD PRIMARY KEY (`ProductID`),
   ADD KEY `FK_BrandID` (`BrandID`);
 
 --
--- Indexes for table `product_quantity`
+-- Chỉ mục cho bảng `product_quantity`
 --
 ALTER TABLE `product_quantity`
   ADD PRIMARY KEY (`ProductID`,`Date`);
 
 --
--- Indexes for table `receivingdetail`
+-- Chỉ mục cho bảng `receivingdetail`
 --
 ALTER TABLE `receivingdetail`
   ADD PRIMARY KEY (`InID`,`ProductID`),
   ADD KEY `FK_ProductID_Re` (`ProductID`);
 
 --
--- Indexes for table `supplier`
+-- Chỉ mục cho bảng `supplier`
 --
 ALTER TABLE `supplier`
   ADD PRIMARY KEY (`SupplierID`);
 
 --
--- Indexes for table `user`
+-- Chỉ mục cho bảng `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`UserID`);
 
 --
--- Indexes for table `voucher`
+-- Chỉ mục cho bảng `voucher`
 --
 ALTER TABLE `voucher`
   ADD PRIMARY KEY (`VoucherID`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT cho các bảng đã đổ
 --
 
 --
--- AUTO_INCREMENT for table `contacts`
+-- AUTO_INCREMENT cho bảng `contacts`
 --
 ALTER TABLE `contacts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `manager`
+-- AUTO_INCREMENT cho bảng `manager`
 --
 ALTER TABLE `manager`
   MODIFY `ManagerID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT for table `online_users`
+-- AUTO_INCREMENT cho bảng `online_users`
 --
 ALTER TABLE `online_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
--- Constraints for dumped tables
+-- Các ràng buộc cho các bảng đã đổ
 --
 
 --
--- Constraints for table `cart`
+-- Các ràng buộc cho bảng `cart`
 --
 ALTER TABLE `cart`
   ADD CONSTRAINT `FK_ProductID_Cart` FOREIGN KEY (`ProductID`) REFERENCES `product` (`ProductID`),
   ADD CONSTRAINT `FK_UserID` FOREIGN KEY (`UserID`) REFERENCES `user` (`UserID`);
 
 --
--- Constraints for table `inventoryreceivingvoucher`
+-- Các ràng buộc cho bảng `inventoryreceivingvoucher`
 --
 ALTER TABLE `inventoryreceivingvoucher`
   ADD CONSTRAINT `FK_SupplierID` FOREIGN KEY (`SupplierID`) REFERENCES `supplier` (`SupplierID`);
 
 --
--- Constraints for table `order`
+-- Các ràng buộc cho bảng `order`
 --
 ALTER TABLE `order`
   ADD CONSTRAINT `FK_Order_PaymentID` FOREIGN KEY (`PaymentID`) REFERENCES `payment` (`PaymentID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -627,26 +696,26 @@ ALTER TABLE `order`
   ADD CONSTRAINT `FK_Order_VoucherID` FOREIGN KEY (`VoucherID`) REFERENCES `voucher` (`VoucherID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
--- Constraints for table `order_line`
+-- Các ràng buộc cho bảng `order_line`
 --
 ALTER TABLE `order_line`
   ADD CONSTRAINT `FK_OrderLine_OrderID` FOREIGN KEY (`OrderID`) REFERENCES `order` (`OrderID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `FK_OrderLine_ProductID` FOREIGN KEY (`ProductID`) REFERENCES `product` (`ProductID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
--- Constraints for table `product`
+-- Các ràng buộc cho bảng `product`
 --
 ALTER TABLE `product`
   ADD CONSTRAINT `FK_BrandID` FOREIGN KEY (`BrandID`) REFERENCES `brand` (`BrandID`) ON DELETE NO ACTION ON UPDATE CASCADE;
 
 --
--- Constraints for table `product_quantity`
+-- Các ràng buộc cho bảng `product_quantity`
 --
 ALTER TABLE `product_quantity`
   ADD CONSTRAINT `FK_ProductID` FOREIGN KEY (`ProductID`) REFERENCES `product` (`ProductID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
--- Constraints for table `receivingdetail`
+-- Các ràng buộc cho bảng `receivingdetail`
 --
 ALTER TABLE `receivingdetail`
   ADD CONSTRAINT `FK_InID` FOREIGN KEY (`InID`) REFERENCES `inventoryreceivingvoucher` (`InID`),
