@@ -94,7 +94,9 @@
                             echo (date_format($date1,"d")); ?> 
                         thg <?php echo date("m") ?>
                     </div>
-                    
+                    <div class="icon_clicked">
+                        <span class="material-symbols-outlined">done</span>
+                    </div>
                 </div>
 
                 <!-- Giao hàng hỏa tốc -->
@@ -117,11 +119,14 @@
             <div class="payment_cards">
                 <div class="payment_cards_row">
                     <!-- Thanh toán qua PayPal -->
-                    <div class="payment_card" data-id="PA02">
+                    <div class="payment_card card_active" data-id="PA02">
                         <div class="payment_icon">
                             <img src="assets/Img/icons/paypal.png" alt="PayPal" style="width:40px; height:auto;">
                         </div>
                         <div class="payment_name">Thanh toán qua PayPal</div>
+                        <div class="icon_clicked">
+                            <span class="material-symbols-outlined">done</span>
+                        </div>
                     </div>
                     <!-- Thanh toán qua VNpay -->
                     <div class="payment_card" data-id="PA03">
@@ -252,9 +257,25 @@
 
                     paymentCards.forEach(card => {
                         card.addEventListener('click', () => {
-                            // Xóa class active
-                            paymentCards.forEach(c => c.classList.remove('card_active'));
+                            // Xóa class active và icon_clicked từ tất cả các cards
+                            paymentCards.forEach(c => {
+                                c.classList.remove('card_active');
+                                const existingIcon = c.querySelector('.icon_clicked');
+                                if (existingIcon) {
+                                    existingIcon.remove();
+                                }
+                            });
+                            
+                            // Thêm class active và icon_clicked cho card được chọn
                             card.classList.add('card_active');
+                            
+                            // Tạo icon checkmark nếu chưa có
+                            if (!card.querySelector('.icon_clicked')) {
+                                const iconDiv = document.createElement('div');
+                                iconDiv.className = 'icon_clicked';
+                                iconDiv.innerHTML = '<span class="material-symbols-outlined">done</span>';
+                                card.appendChild(iconDiv);
+                            }
 
                             // Gán PaymentID
                             document.getElementById("PaymentID").value = card.dataset.id;

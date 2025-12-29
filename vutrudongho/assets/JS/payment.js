@@ -24,8 +24,29 @@ function updateTotal() {
 deliveryCards.forEach(card => {
     card.addEventListener("click", () => {
 
-        deliveryCards.forEach(c => c.classList.remove("card_active"));
+        // Xóa class active và icon_clicked từ tất cả các cards
+        deliveryCards.forEach(c => {
+            c.classList.remove("card_active");
+            const title = c.querySelector(".delivery_title");
+            if (title) title.classList.remove("header_active");
+            const existingIcon = c.querySelector('.icon_clicked');
+            if (existingIcon) {
+                existingIcon.remove();
+            }
+        });
+        
+        // Thêm class active và icon_clicked cho card được chọn
         card.classList.add("card_active");
+        const title = card.querySelector(".delivery_title");
+        if (title) title.classList.add("header_active");
+        
+        // Tạo icon checkmark nếu chưa có
+        if (!card.querySelector('.icon_clicked')) {
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'icon_clicked';
+            iconDiv.innerHTML = '<span class="material-symbols-outlined">done</span>';
+            card.appendChild(iconDiv);
+        }
 
         const fee = parseFloat(card.dataset.deliveryfee);  // ✔ Sửa parseInt → parseFloat
         currentFee = fee;
