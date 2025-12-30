@@ -1,10 +1,11 @@
 <?php
-// Xử lý trạng thái thanh toán VNPay (nếu có)
+// Xử lý trạng thái thanh toán
 $paymentStatus = "";
+$paymentMethod = $_GET['method'] ?? '';
 
 if (isset($_GET['payment'])) {
     if ($_GET['payment'] === 'success') {
-        $paymentStatus = "Thanh toán VNPay thành công";
+        $paymentStatus = "Thanh toán thành công";
     } elseif ($_GET['payment'] === 'failed') {
         $paymentStatus = "Thanh toán thất bại";
     } elseif ($_GET['payment'] === 'invalid_signature') {
@@ -32,11 +33,11 @@ if (isset($_GET['payment'])) {
 
     <div class="main_container">
 
-        <?php if ($paymentStatus === "Thanh toán VNPay thành công"): ?>
+        <?php if ($paymentStatus === "Thanh toán thành công"): ?>
             <div class="placement_body">
                 <img src="assets/Img/icons/icons8-checkmark-200.png" alt="">
                 <h2>Đặt hàng thành công!</h2>
-                <p>Cảm ơn bạn đã tin tưởng lunarveil.com</p>
+                <p>Thanh toán qua <?php echo $paymentMethod === 'paypal' ? 'PayPal' : 'VNPay'; ?> đã hoàn tất.</p>
                 <a style="text-decoration: none; color: white;" href="index.php">
                     <button>OK</button>
                 </a>

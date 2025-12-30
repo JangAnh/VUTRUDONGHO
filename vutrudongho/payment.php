@@ -43,9 +43,6 @@
       'opsz' 30
     }
 </style>
-<!-- SDK PayPal (nếu bạn định tích hợp thật) -->
-<script src="https://www.paypal.com/sdk/js?client-id=AfH7LU1YDV8qQHfYCLc7802uj-9D810FUWzNPc6oJdxzalC6Ub4i1gF-anOPTcvHzBDK20-8eOvfEYbn"></script>
-
 <body>
     <div class="payment_container">
         <div class="payment_content">
@@ -156,8 +153,6 @@
 
             <!-- Form thanh toán -->
             <form id="paymentForm" action="#" method="post">
-                <!-- PayPal SDK -->
-                <script src="https://www.paypal.com/sdk/js?client-id=AfH7LU1YDV8qQHfYCLc7802uj-9D810FUWzNPc6oJdxzalC6Ub4i1gF-anOPTcvHzBDK20-8eOvfEYbn&currency=USD"></script>
 
                 <div class="button">
                     <input type="hidden" id="UserID"        name="UserID"        value="<?php echo $userID ?>">
@@ -175,37 +170,70 @@
                     <div id="paypal-button-container" style="display:none; margin-top: 20px;"></div>
                 </div>
                 <script>
-                    /* ============ PAYPAL BUTTON ============ */
-                    paypal.Buttons({
-                        createOrder: function(data, actions) {
-                            const total = document.getElementById('Total').value || '10.00';
-                            return actions.order.create({
-                                purchase_units: [{
-                                    amount: { value: total }
-                                }]
-                            });
-                        },
-                        onApprove: function(data, actions) {
-                            // Capture the PayPal payment first, then submit the server form to create the order
-                            return actions.order.capture().then(function(details) {
-                                // Submit server-side order creation which will handle cart cleanup and redirect
-                                const form = document.getElementById('paymentForm');
-                                form.action = 'modules/place_order.php';
-                                form.method = 'POST';
-                                form.submit();
-                            });
-                        },
-                        onCancel: function(data) {
-                            // User cancelled PayPal — redirect to checkout with cancelled status
-                            window.location.href = 'checkout.php?payment=failed';
-                        },
-                        onError: function(err) {
-                            console.error(err);
-                            // Redirect to failure page so cart remains intact
-                            window.location.href = 'checkout.php?payment=failed';
-                        }
-                    }).render('#paypal-button-container');
+                    /* PayPal SDK loader to avoid "paypal is not defined" */
+                    const PAYPAL_SDK_URL = "https://www.paypal.com/sdk/js?client-id=AfH7LU1YDV8qQHfYCLc7802uj-9D810FUWzNPc6oJdxzalC6Ub4i1gF-anOPTcvHzBDK20-8eOvfEYbn&currency=USD&components=buttons";
+                    let paypalButtonsRendered = false;
 
+                    function loadPayPalSdk(onReady) {
+                        if (window.paypal) {
+                            onReady();
+                            return;
+                        }
+
+                        let script = document.getElementById('paypal-sdk');
+                        if (!script) {
+                            script = document.createElement('script');
+                            script.id = 'paypal-sdk';
+                            script.src = PAYPAL_SDK_URL;
+                            script.async = true;
+                            script.onload = () => onReady();
+                            script.onerror = () => {
+                                console.error('Không thể tải PayPal SDK');
+                                alert('Không thể tải PayPal. Vui lòng thử lại hoặc chọn phương thức khác.');
+                            };
+                            document.head.appendChild(script);
+                        } else {
+                            script.addEventListener('load', onReady);
+                        }
+                    }
+
+                    function renderPayPalButtons() {
+                        if (paypalButtonsRendered) return;
+                        loadPayPalSdk(() => {
+                            if (!window.paypal) {
+                                console.error('PayPal SDK chưa sẵn sàng');
+                                return;
+                            }
+
+                            const totalInput = document.getElementById('Total');
+                            window.paypal.Buttons({
+                                createOrder: function(data, actions) {
+                                    const totalVal = totalInput.value || '10.00';
+                                    const cleanTotal = parseFloat(totalVal.toString().replace(/,/g, "")) || 0;
+                                    return actions.order.create({
+                                        purchase_units: [{ amount: { value: cleanTotal.toFixed(2) } }]
+                                    });
+                                },
+                                onApprove: function(data, actions) {
+                                    return actions.order.capture().then(function() {
+                                        const form = document.getElementById('paymentForm');
+                                        form.action = 'modules/place_order.php';
+                                        form.method = 'POST';
+                                        form.submit();
+                                    });
+                                },
+                                onCancel: function() {
+                                    window.location.href = 'checkout.php?payment=failed';
+                                },
+                                onError: function(err) {
+                                    console.error(err);
+                                    window.location.href = 'checkout.php?payment=failed';
+                                }
+                            }).render('#paypal-button-container');
+
+                            paypalButtonsRendered = true;
+                        });
+                    }
 
                     /* ============ SỰ KIỆN CLICK NÚT THANH TOÁN ============ */
                     document.addEventListener("DOMContentLoaded", () => {
@@ -228,6 +256,7 @@
 
                             /* PAYPAL */
                             if (paymentID === "PA02") {
+                                renderPayPalButtons();
                                 payBtn.style.display = "none";
                                 document.getElementById("paypal-button-container").style.display = "block";
                                 return;
@@ -235,11 +264,14 @@
 
                             /* VNPAY */
                             if (paymentID === "PA03") {
-                                // total đang là USD → đổi sang VND
-                                const usdToVndRate = 25000;   // hoặc 24,500 / 25,000 tùy bạn
+                                const usdToVndRate = 25000;
                                 const amountVND = Math.round(total * usdToVndRate);
 
-                                // Submit form to server to create the order first, then server will redirect to VNPay
+                                if (Number.isNaN(amountVND) || amountVND <= 0) {
+                                    alert("Giá trị đơn hàng không hợp lệ. Vui lòng tải lại trang và thử lại.");
+                                    return;
+                                }
+
                                 const form = document.getElementById('paymentForm');
                                 form.action = 'modules/place_order.php?vnp=1&amount=' + amountVND;
                                 form.method = 'POST';
@@ -257,7 +289,6 @@
 
                     paymentCards.forEach(card => {
                         card.addEventListener('click', () => {
-                            // Xóa class active và icon_clicked từ tất cả các cards
                             paymentCards.forEach(c => {
                                 c.classList.remove('card_active');
                                 const existingIcon = c.querySelector('.icon_clicked');
@@ -266,10 +297,8 @@
                                 }
                             });
                             
-                            // Thêm class active và icon_clicked cho card được chọn
                             card.classList.add('card_active');
                             
-                            // Tạo icon checkmark nếu chưa có
                             if (!card.querySelector('.icon_clicked')) {
                                 const iconDiv = document.createElement('div');
                                 iconDiv.className = 'icon_clicked';
@@ -277,17 +306,15 @@
                                 card.appendChild(iconDiv);
                             }
 
-                            // Gán PaymentID
                             document.getElementById("PaymentID").value = card.dataset.id;
 
-                            /* Đổi text nút */
                             if (card.dataset.id === "PA03") {
                                 document.getElementById("payBtn").innerText = "Thanh toán VNPay";
                             } else {
                                 document.getElementById("payBtn").innerText = "Thanh toán PayPal";
+                                renderPayPalButtons();
                             }
 
-                            // Reset UI PayPal
                             document.getElementById("paypal-button-container").style.display = "none";
                             document.getElementById("payBtn").style.display = "block";
                         });
