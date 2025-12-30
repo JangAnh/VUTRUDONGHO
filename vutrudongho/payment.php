@@ -170,68 +170,182 @@
                     <div id="paypal-button-container" style="display:none; margin-top: 20px;"></div>
                 </div>
                 <script>
-                    /* PayPal SDK loader to avoid "paypal is not defined" */
-                    const PAYPAL_SDK_URL = "https://www.paypal.com/sdk/js?client-id=AfH7LU1YDV8qQHfYCLc7802uj-9D810FUWzNPc6oJdxzalC6Ub4i1gF-anOPTcvHzBDK20-8eOvfEYbn&currency=USD&components=buttons";
+                    /* PayPal SDK loader with proper error handling */
+                    // IMPORTANT: Replace the CLIENT_ID below with your actual PayPal Client ID from https://developer.paypal.com/
+                    // You need a PayPal Business or Developer account to get this ID
+                    // Sandbox testing: Use a sandbox client ID from PayPal Developer Dashboard
+                    // Production: Use your live client ID
+                    
+                    // FOR TESTING: If you don't have a valid Client ID, create one at:
+                    // 1. Go to https://developer.paypal.com/dashboard/
+                    // 2. Create an app in Sandbox
+                    // 3. Copy the Client ID from the app settings
+                    
+                    const PAYPAL_CLIENT_ID = "AZkY4SHfzGEVrGmd9kAjv4t2l-2EEgyLZZj1KfBZE-5nuMItvT7HnAuiF6trjVCv7HLT6Pyb6L2opNHk";
+                    const PAYPAL_SDK_URL = "https://www.paypal.com/sdk/js?client-id=" + PAYPAL_CLIENT_ID + "&currency=USD&components=buttons&intent=capture";
                     let paypalButtonsRendered = false;
+                    let paypalLoadAttempts = 0;
+                    const MAX_PAYPAL_RETRIES = 2;
 
-                    function loadPayPalSdk(onReady) {
+                    function loadPayPalSdk(onReady, onError) {
+                        onError = onError || (() => {});
+                        
                         if (window.paypal) {
+                            console.log('[PayPal] SDK already loaded');
                             onReady();
                             return;
                         }
 
                         let script = document.getElementById('paypal-sdk');
-                        if (!script) {
-                            script = document.createElement('script');
-                            script.id = 'paypal-sdk';
-                            script.src = PAYPAL_SDK_URL;
-                            script.async = true;
-                            script.onload = () => onReady();
-                            script.onerror = () => {
-                                console.error('Không thể tải PayPal SDK');
-                                alert('Không thể tải PayPal. Vui lòng thử lại hoặc chọn phương thức khác.');
-                            };
-                            document.head.appendChild(script);
-                        } else {
-                            script.addEventListener('load', onReady);
+                        if (script) {
+                            console.log('[PayPal] SDK script tag exists, waiting for load');
+                            return;
                         }
+
+                        console.log('[PayPal] Creating SDK script tag');
+                        script = document.createElement('script');
+                        script.id = 'paypal-sdk';
+                        script.src = PAYPAL_SDK_URL;
+                        script.async = true;
+                        
+                        script.onload = () => {
+                            console.log('[PayPal] SDK script loaded successfully');
+                            // Wait a moment for PayPal object to initialize
+                            setTimeout(() => {
+                                if (window.paypal) {
+                                    onReady();
+                                } else {
+                                    console.error('[PayPal] SDK loaded but paypal object not available');
+                                    onError('SDK loaded but paypal object unavailable');
+                                }
+                            }, 500);
+                        };
+                        
+                        script.onerror = () => {
+                            console.error('[PayPal] Failed to load SDK. URL:', PAYPAL_SDK_URL);
+                            paypalLoadAttempts++;
+                            
+                            if (paypalLoadAttempts < MAX_PAYPAL_RETRIES) {
+                                console.log('[PayPal] Retrying SDK load, attempt ' + (paypalLoadAttempts + 1));
+                                // Remove failed script and retry
+                                script.remove();
+                                document.getElementById('paypal-sdk')?.remove();
+                                setTimeout(() => loadPayPalSdk(onReady, onError), 2000);
+                            } else {
+                                console.error('[PayPal] Max retries reached');
+                                onError('Không thể tải PayPal SDK sau nhiều lần thử. Vui lòng kiểm tra client ID hoặc sử dụng phương thức thanh toán khác.');
+                            }
+                        };
+                        
+                        document.head.appendChild(script);
                     }
 
                     function renderPayPalButtons() {
-                        if (paypalButtonsRendered) return;
+                        if (paypalButtonsRendered) {
+                            console.log('[PayPal] Buttons already rendered');
+                            return;
+                        }
+                        
+                        console.log('[PayPal] Starting renderPayPalButtons');
+                        
                         loadPayPalSdk(() => {
+                            console.log('[PayPal] loadPayPalSdk callback reached');
+                            
                             if (!window.paypal) {
-                                console.error('PayPal SDK chưa sẵn sàng');
+                                console.error('[PayPal] SDK loaded but paypal object not found');
+                                document.getElementById("payBtn").style.display = "block";
+                                document.getElementById("paypal-button-container").style.display = "none";
+                                alert('Không thể khởi tạo PayPal. Vui lòng chọn phương thức khác.');
                                 return;
                             }
 
-                            const totalInput = document.getElementById('Total');
-                            window.paypal.Buttons({
-                                createOrder: function(data, actions) {
-                                    const totalVal = totalInput.value || '10.00';
-                                    const cleanTotal = parseFloat(totalVal.toString().replace(/,/g, "")) || 0;
-                                    return actions.order.create({
-                                        purchase_units: [{ amount: { value: cleanTotal.toFixed(2) } }]
-                                    });
-                                },
-                                onApprove: function(data, actions) {
-                                    return actions.order.capture().then(function() {
-                                        const form = document.getElementById('paymentForm');
-                                        form.action = 'modules/place_order.php';
-                                        form.method = 'POST';
-                                        form.submit();
-                                    });
-                                },
-                                onCancel: function() {
-                                    window.location.href = 'checkout.php?payment=failed';
-                                },
-                                onError: function(err) {
-                                    console.error(err);
-                                    window.location.href = 'checkout.php?payment=failed';
-                                }
-                            }).render('#paypal-button-container');
+                            try {
+                                const totalInput = document.getElementById('Total');
+                                const userIdInput = document.getElementById('UserID');
+                                const shippingFeeInput = document.getElementById('ShippingFee');
+                                const addressInput = document.getElementById('Address');
+                                const paymentIdInput = document.getElementById('PaymentID');
+                                const orderDiscountInput = document.getElementById('OrderDiscount');
+                                const voucherIdInput = document.getElementById('VoucherID');
 
-                            paypalButtonsRendered = true;
+                                console.log('[PayPal] Creating buttons with paypal.Buttons');
+                                
+                                window.paypal.Buttons({
+                                    createOrder: function(data, actions) {
+                                        const totalVal = totalInput.value || '10.00';
+                                        const cleanTotal = parseFloat(totalVal.toString().replace(/,/g, "")) || 0;
+                                        
+                                        console.log('[PayPal] createOrder called, amount:', cleanTotal);
+                                        
+                                        // Validate all required form fields before creating order
+                                        if (!userIdInput.value || !addressInput.value || !shippingFeeInput.value) {
+                                            console.error('[PayPal] Missing required fields');
+                                            alert('Vui lòng hoàn tất các bước thanh toán trước khi tiếp tục.');
+                                            throw new Error('Missing required fields');
+                                        }
+                                        
+                                        return actions.order.create({
+                                            purchase_units: [{ 
+                                                amount: { 
+                                                    value: cleanTotal.toFixed(2),
+                                                    currency_code: "USD"
+                                                } 
+                                            }]
+                                        });
+                                    },
+                                    onApprove: function(data, actions) {
+                                        console.log('[PayPal] onApprove called, orderID:', data.orderID);
+                                        
+                                        return actions.order.capture().then(function(orderData) {
+                                            console.log('[PayPal] Payment captured successfully');
+                                            
+                                            // Ensure PaymentID is set to PA02 (PayPal)
+                                            paymentIdInput.value = 'PA02';
+                                            
+                                            const form = document.getElementById('paymentForm');
+                                            form.action = 'modules/place_order.php';
+                                            form.method = 'POST';
+                                            
+                                            // Log for debugging
+                                            console.log('[PayPal] Submitting form with data:', {
+                                                UserID: userIdInput.value,
+                                                ShippingFee: shippingFeeInput.value,
+                                                Total: totalInput.value,
+                                                PaymentID: paymentIdInput.value,
+                                                Address: addressInput.value
+                                            });
+                                            
+                                            form.submit();
+                                        });
+                                    },
+                                    onCancel: function() {
+                                        console.log('[PayPal] User cancelled payment');
+                                        window.location.href = 'checkout.php?payment=failed';
+                                    },
+                                    onError: function(err) {
+                                        console.error('[PayPal] Payment error:', err);
+                                        alert('Có lỗi xảy ra với PayPal. Vui lòng thử lại hoặc chọn phương thức khác.');
+                                    }
+                                }).render('#paypal-button-container').catch(err => {
+                                    console.error('[PayPal] Error rendering buttons:', err);
+                                    document.getElementById("payBtn").style.display = "block";
+                                    document.getElementById("paypal-button-container").style.display = "none";
+                                    alert('Không thể hiển thị nút PayPal. Vui lòng chọn phương thức khác.');
+                                });
+
+                                paypalButtonsRendered = true;
+                                console.log('[PayPal] Buttons rendered successfully');
+                            } catch (error) {
+                                console.error('[PayPal] Error in renderPayPalButtons:', error);
+                                alert('Lỗi khởi tạo PayPal: ' + error.message);
+                                document.getElementById("payBtn").style.display = "block";
+                                document.getElementById("paypal-button-container").style.display = "none";
+                            }
+                        }, (errorMsg) => {
+                            console.error('[PayPal] SDK load failed:', errorMsg);
+                            document.getElementById("payBtn").style.display = "block";
+                            document.getElementById("paypal-button-container").style.display = "none";
+                            alert(errorMsg || 'Không thể tải PayPal SDK. Vui lòng thử lại hoặc chọn phương thức khác.');
                         });
                     }
 
@@ -248,14 +362,30 @@
                         }
 
                         payBtn.addEventListener("click", function () {
+                            console.log('[Payment Button] Click detected');
 
                             const paymentID = paymentIDEl.value;
 
                             let total = totalEl.value;
                             total = parseFloat(total.toString().replace(/,/g, "")) || 0;
 
+                            // Validate required fields before payment
+                            const shippingFeeInput = document.getElementById('ShippingFee');
+                            const addressInput = document.getElementById('Address');
+                            
+                            if (!shippingFeeInput.value || !addressInput.value) {
+                                alert('Vui lòng chọn phương thức giao hàng trước khi thanh toán.');
+                                return;
+                            }
+
                             /* PAYPAL */
                             if (paymentID === "PA02") {
+                                console.log('[Payment Button] PayPal selected, rendering buttons');
+                                // Ensure PaymentID is set correctly
+                                paymentIDEl.value = "PA02";
+                                payBtn.disabled = true;
+                                payBtn.textContent = "Đang tải PayPal...";
+                                
                                 renderPayPalButtons();
                                 payBtn.style.display = "none";
                                 document.getElementById("paypal-button-container").style.display = "block";

@@ -7,6 +7,7 @@
     if(isset($_POST['UserID'])){
         // Log received POST for debugging
         error_log('[place_order] POST received: ' . json_encode(array_keys($_POST)));
+        error_log('[place_order] PaymentID: ' . ($_POST['PaymentID'] ?? 'NOT SET'));
         $conn = connectDatabase();
 
         if(!$conn){
