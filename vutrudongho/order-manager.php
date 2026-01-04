@@ -232,19 +232,24 @@ $status = !empty($_GET['order-status']) ? $_GET['order-status'] : "";
                                     $currentStatus = $row['OrderStatus'];
                                     $allowedStatuses = isset($validTransitions[$currentStatus]) ? $validTransitions[$currentStatus] : array();
                                     
+                                    // Display names with step order for clarity
+                                    $statusDisplay = array(
+                                        'S01' => '1. Chờ xác nhận',
+                                        'S02' => '2. Đã xác nhận',
+                                        'S03' => '3. Đang giao',
+                                        'S04' => '4. Đã giao',
+                                        'S05' => 'Hủy đơn'
+                                    );
+
                                     $resultt = mysqli_query($con, "select * from `orderstatus` ORDER BY StatusID ASC");
                                     while ($roww = mysqli_fetch_array($resultt)) {
-                                        // Only show statuses that are allowed from current status
-                                        if(in_array($roww['StatusID'], $allowedStatuses)) {
-                                            if($currentStatus == $roww['StatusID']) {
-                                                ?>
-                                                    <option value="<?= $roww['StatusID'] ?>_<?= $roww['StatusName'] ?>" selected><?= $roww['StatusName'] ?></option>
-                                                <?php
-                                            } else {
-                                                ?>
-                                                <option value="<?= $roww['StatusID'] ?>_<?= $roww['StatusName'] ?>"><?= $roww['StatusName'] ?></option>
-                                                <?php
-                                            }
+                                        $statusId = $roww['StatusID'];
+                                        if(in_array($statusId, $allowedStatuses)) {
+                                            $label = isset($statusDisplay[$statusId]) ? $statusDisplay[$statusId] : $roww['StatusName'];
+                                            $selected = ($currentStatus == $statusId) ? 'selected' : '';
+                                            ?>
+                                                <option value="<?= $statusId ?>_<?= $roww['StatusName'] ?>" <?= $selected ?>><?= $label ?></option>
+                                            <?php
                                         }
                                     }
                                 ?>
