@@ -11,6 +11,7 @@ date_default_timezone_set('Asia/Ho_Chi_Minh');
 // Get parameters from GET (redirected from place_order.php)
 $amount = isset($_GET['amount']) ? (int)$_GET['amount'] : 0;
 $order_id = isset($_GET['order_id']) ? $_GET['order_id'] : '';
+$order_summary = isset($_GET['order_summary']) ? $_GET['order_summary'] : '';
 
 // Validate amount and order_id
 if ($amount <= 0 || empty($order_id)) {
@@ -38,6 +39,9 @@ $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
 // Set expiration time (15 minutes from now)
 $expire = date('YmdHis', strtotime('+15 minutes'));
 
+$orderInfoText = trim($order_summary) !== '' ? $order_summary : ("Thanh toan GD: " . $order_id);
+$orderInfoText = substr($orderInfoText, 0, 240);
+
 $inputData = array(
     "vnp_Version" => "2.1.0",
     "vnp_TmnCode" => $vnp_TmnCode,
@@ -47,8 +51,8 @@ $inputData = array(
     "vnp_CurrCode" => "VND",
     "vnp_IpAddr" => $vnp_IpAddr,
     "vnp_Locale" => $vnp_Locale,
-    "vnp_OrderInfo" => "Thanh toan GD: " . $vnp_TxnRef,
-    "vnp_OrderType" => "other",
+    "vnp_OrderInfo" => $orderInfoText,
+    "vnp_OrderType" => "billpayment",
     "vnp_ReturnUrl" => $vnp_Returnurl,
     "vnp_TxnRef" => $vnp_TxnRef,
     "vnp_ExpireDate" => $expire

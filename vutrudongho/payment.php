@@ -187,6 +187,10 @@
                     let paypalLoadAttempts = 0;
                     const MAX_PAYPAL_RETRIES = 2;
 
+                        // Expose cart data to JS for PayPal metadata
+                        const ORDER_SUMMARY = <?php echo json_encode($orderSummaryStr); ?>;
+                        const CART_ITEMS = <?php echo $cartItemsJson; ?>;
+
                     function loadPayPalSdk(onReady, onError) {
                         onError = onError || (() => {});
                         
@@ -273,9 +277,27 @@
                                 window.paypal.Buttons({
                                     createOrder: function(data, actions) {
                                         const totalVal = totalInput.value || '10.00';
-                                        const cleanTotal = parseFloat(totalVal.toString().replace(/,/g, "")) || 0;
+                                        let cleanTotal = parseFloat(totalVal.toString().replace(/,/g, "")) || 0;
+                                        const shipping = parseFloat(shippingFeeInput.value || '0') || 0;
+                                        const discount = parseFloat(orderDiscountInput.value || '0') || 0;
+
+                                        const items = Array.isArray(CART_ITEMS) ? CART_ITEMS.map(i => ({
+                                            name: i.name,
+                                            quantity: i.quantity.toString(),
+                                            unit_amount: {
+                                                currency_code: i.unit_amount?.currency_code || 'USD',
+                                                value: Number(i.unit_amount?.value || 0).toFixed(2)
+                                            }
+                                        })) : [];
+
+                                        // Derive totals for breakdown
+                                        const itemTotal = items.reduce((acc, it) => acc + (parseFloat(it.unit_amount.value) || 0) * (parseInt(it.quantity) || 1), 0);
+                                        const computedTotal = itemTotal + shipping - discount;
+                                        if (!cleanTotal || Math.abs(cleanTotal - computedTotal) > 0.01) {
+                                            cleanTotal = computedTotal;
+                                        }
                                         
-                                        console.log('[PayPal] createOrder called, amount:', cleanTotal);
+                                        console.log('[PayPal] createOrder called, amount:', cleanTotal, 'itemTotal:', itemTotal, 'shipping:', shipping, 'discount:', discount);
                                         
                                         // Validate all required form fields before creating order
                                         if (!userIdInput.value || !addressInput.value || !shippingFeeInput.value) {
@@ -284,12 +306,25 @@
                                             throw new Error('Missing required fields');
                                         }
                                         
+                                        const invoiceId = 'INV-' + Date.now();
+                                        const desc = (ORDER_SUMMARY || '').toString().substring(0, 127);
+
                                         return actions.order.create({
                                             purchase_units: [{ 
+                                                reference_id: invoiceId,
+                                                description: desc,
+                                                custom_id: userIdInput.value || 'Guest',
+                                                invoice_id: invoiceId,
                                                 amount: { 
                                                     value: cleanTotal.toFixed(2),
-                                                    currency_code: "USD"
-                                                } 
+                                                    currency_code: "USD",
+                                                    breakdown: {
+                                                        item_total: { currency_code: "USD", value: itemTotal.toFixed(2) },
+                                                        shipping: { currency_code: "USD", value: shipping.toFixed(2) },
+                                                        discount: { currency_code: "USD", value: discount.toFixed(2) }
+                                                    }
+                                                },
+                                                items
                                             }]
                                         });
                                     },
@@ -461,11 +496,24 @@
             <div class="product_list">
                 <?php
                     $sum = 0;
+                    $orderSummaryArr = [];
+                    $cartItemsJs = [];
                     
                     while($item = mysqli_fetch_array($cart)){
                         $product = get_product_by_id($item['ProductID']);
                         $productPrice = (int) $product["PriceToSell"] - (int) $product["PriceToSell"]* (int) $product['Discount']/100 ;
                         $sum += $productPrice * (int) $item['Quantity'];
+
+                        // Collect info for PayPal & VNPay metadata
+                        $orderSummaryArr[] = $product['ProductName'] . ' x ' . (int)$item['Quantity'];
+                        $cartItemsJs[] = [
+                            'name' => $product['ProductName'],
+                            'quantity' => (int)$item['Quantity'],
+                            'unit_amount' => [
+                                'currency_code' => 'USD',
+                                'value' => round($productPrice, 2)
+                            ]
+                        ];
                 ?>
                 <div class="product_item">
                     <div class="product_item_img"><img src="assets/Img/productImg/<?php echo $product['ProductImg'] ?>" alt=""></div>
@@ -488,6 +536,10 @@
                     
                 ?>
             </div>
+            <?php 
+                $orderSummaryStr = implode('; ', $orderSummaryArr);
+                $cartItemsJson = json_encode($cartItemsJs);
+            ?>
             <div class="payment_detail">
                 <div class="payment_detail_pricetotal">
                     <span>Tổng tiền hàng:</span>
@@ -511,6 +563,7 @@
         </div>
     </div>
     <div id="sum" data-sum="<?php echo $sum ?>"></div>
+    <input type="hidden" id="OrderSummary" name="OrderSummary" value="<?php echo htmlspecialchars($orderSummaryStr, ENT_QUOTES) ?>" />
      <!-- File JS xử lý chọn thanh toán, voucher, tổng tiền -->
     <script src="assets/JS/payment.js"></script>   
 </body>

@@ -60,6 +60,9 @@
         // VoucherID has a FK constraint, so NULL is valid when no voucher is selected
         $voucherValue = (trim($voucherID) === 'NULL' || trim($voucherID) === '') ? 'NULL' : "'{$voucherID}'";
 
+        // Collect order summary for downstream gateways (VNPay) and logging
+        $orderSummaryPieces = [];
+
         // Flag to know if this is an immediate PayPal capture flow
         $isPaypalCapture = ($paymentID === 'PA02');
         
@@ -105,6 +108,7 @@
                 $gender = mysqli_real_escape_string($conn, $product['Gender']);
                 $productImg = mysqli_real_escape_string($conn, $product['ProductImg']);
                 $discount = (int) $product['Discount'];
+                $orderSummaryPieces[] = $product['ProductName'] . ' x ' . (int)$item['Quantity'];
                 
                 $rs4 = $conn->query("INSERT INTO `order_line` (`OrderID`, `ProductID`, `Quantity`, `UnitPrice`, `ProductName`, `Model`, `Color`, `Gender`, `ProductImg`, `Discount`) VALUES ('$orderID', '". $product['ProductID'] ."', '". $item['Quantity'] ."', '$product_Price', '$productName', '$model', '$color', '$gender', '$productImg', '$discount')");
                 
@@ -148,11 +152,13 @@
             // 4. Commit or rollback based on all operations success
             if($allItemsSuccess){
                 $conn->commit();
+                $orderSummaryStr = implode('; ', $orderSummaryPieces);
 
                 // VNPay flow: redirect to payment gateway
                 if (isset($_GET['vnp']) && isset($_GET['amount'])) {
                     $amount = urlencode($_GET['amount']);
-                    header("Location: ../vnpay_create_payment.php?amount={$amount}&order_id={$orderID}", true, 303);
+                    $summaryParam = urlencode(substr($orderSummaryStr, 0, 240));
+                    header("Location: ../vnpay_create_payment.php?amount={$amount}&order_id={$orderID}&order_summary={$summaryParam}", true, 303);
                     exit;
                 }
 
