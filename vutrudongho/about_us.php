@@ -74,7 +74,12 @@
         document.getElementById(id).classList.add('show-map');
     }
 </script>
- <script src="//code.tidio.co/3ez9gbhu2mescwypayav1eg1e1ttvqnf.js" async></script>
+  <!-- FACEBOOK FLOAT BUTTON -->
+  <?php
+  include($_SERVER['DOCUMENT_ROOT'] . "/vutrudongho/vutrudongho/components/FB-social-chat.php");
+  ?>
+  <!-- TIDIO CHAT BUTTON -->
+  <script src="//code.tidio.co/3ez9gbhu2mescwypayav1eg1e1ttvqnf.js" async></script>
 </body>
 
 </html>
