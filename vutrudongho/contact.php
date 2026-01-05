@@ -624,7 +624,19 @@
     include($_SERVER['DOCUMENT_ROOT'] . "/vutrudongho/vutrudongho/components/FB-social-chat.php");
     ?>
     <!-- TIDIO CHAT BUTTON -->
-  <script src="//code.tidio.co/3ez9gbhu2mescwypayav1eg1e1ttvqnf.js" async></script>
+  <!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/695b5ed7f4b504197f1c7646/1je6ekv7t';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
   <!--End: Footer-->
     <!--start Hiện thanh line-->
     <script>
