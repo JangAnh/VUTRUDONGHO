@@ -20,13 +20,66 @@ if ($amount <= 0 || empty($order_id)) {
 }
 
 require_once("./vnpay_config.php");
+include_once './modules/connectDatabase.php';
 
-// Check if VNPAY config is loaded
-if (!isset($vnp_Url) || !isset($vnp_Returnurl) || !isset($vnp_HashSecret) || !isset($vnp_TmnCode)) {
-    error_log("[vnpay_create_payment] VNPAY config not properly loaded");
+// Remove Vietnamese diacritics & non-ASCII for VNPay OrderInfo
+function stripVN($str) {
+    $str = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $str);
+    $str = preg_replace('/[^A-Za-z0-9\s\.\,\-\:\|]/', '', $str);
+    return trim($str);
+}
+
+// Nhận SecureHash và build lại chuỗi kiểm tra tính hợp lệ
+// ...
+
+$order_id = isset($_GET['order_id']) ? $_GET['order_id'] : '';
+
+// Validate amount and order_id
+if ($amount <= 0 || empty($order_id)) {
+    error_log("[vnpay_create_payment] Invalid amount or order_id: amount=$amount, order_id=$order_id");
     header("Location: ./checkout.php?payment=failed");
     exit;
 }
+
+$orderInfo = "Thanh toan GD: " . $order_id;
+
+// === Load order details to enrich OrderInfo ===
+$conn = connectDatabase();
+if ($conn && !empty($order_id)) {
+    // Get order info
+    $orderStmt = $conn->prepare("SELECT ShippingFee, OrderDiscount, Address FROM `order` WHERE OrderID = ?");
+    $orderStmt->bind_param("s", $order_id);
+    if ($orderStmt->execute()) {
+        $orderData = $orderStmt->get_result()->fetch_assoc();
+    }
+    $orderStmt->close();
+
+    // Count items in order_line (fallback: 0 if table empty)
+    $itemCount = 0;
+    $itemStmt = $conn->prepare("SELECT SUM(Quantity) AS total_qty FROM order_line WHERE OrderID = ?");
+    $itemStmt->bind_param("s", $order_id);
+    if ($itemStmt->execute()) {
+        $itemData = $itemStmt->get_result()->fetch_assoc();
+        $itemCount = (int)($itemData['total_qty'] ?? 0);
+    }
+    $itemStmt->close();
+
+    $shippingFee   = isset($orderData['ShippingFee'])   ? (float)$orderData['ShippingFee']   : 0;
+    $orderDiscount = isset($orderData['OrderDiscount']) ? (float)$orderData['OrderDiscount'] : 0;
+    $address       = isset($orderData['Address'])       ? $orderData['Address']              : '';
+
+    $orderInfo = sprintf(
+        "DH:%s | Tong:%s VND | PhiVC:%s | Giam:%s | SL:%d | DC:%s",
+        $order_id,
+        number_format($amount, 0, '', ''),
+        number_format($shippingFee, 0, '', ''),
+        number_format($orderDiscount, 0, '', ''),
+        $itemCount,
+        str_replace('#', ', ', $address)
+    );
+}
+
+$orderInfo = stripVN($orderInfo);
 
 // Use order_id as transaction reference
 $vnp_TxnRef = $order_id;
@@ -47,7 +100,7 @@ $inputData = array(
     "vnp_CurrCode" => "VND",
     "vnp_IpAddr" => $vnp_IpAddr,
     "vnp_Locale" => $vnp_Locale,
-    "vnp_OrderInfo" => "Thanh toan GD: " . $vnp_TxnRef,
+    "vnp_OrderInfo" => $orderInfo,
     "vnp_OrderType" => "other",
     "vnp_ReturnUrl" => $vnp_Returnurl,
     "vnp_TxnRef" => $vnp_TxnRef,
