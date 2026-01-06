@@ -23,6 +23,28 @@
         if(mysqli_num_rows($cart) <= 0){
             header("location: cart.php");
         }
+
+        // Utility: strip Vietnamese diacritics for PayPal payloads
+        function stripVN($str) {
+            $str = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $str);
+            $str = preg_replace('/[^A-Za-z0-9\s\-\,\.]/', '', $str);
+            return trim($str);
+        }
+
+        // Build cart data for PayPal (sanitized names, unit prices)
+        $cartItems = [];
+        if($conn){
+            $cartForPaypal = mysqli_query($conn, "SELECT c.Quantity, p.ProductID, p.ProductName, p.PriceToSell, p.Discount FROM cart c JOIN product p ON c.ProductID = p.ProductID WHERE c.UserID='$userID'");
+            while($item = mysqli_fetch_assoc($cartForPaypal)){
+                $unitPrice = (float)$item['PriceToSell'] - (float)$item['PriceToSell'] * (float)$item['Discount'] / 100;
+                $cartItems[] = [
+                    'name'       => stripVN($item['ProductName']),
+                    'sku'        => $item['ProductID'],
+                    'quantity'   => (int)$item['Quantity'],
+                    'unit_price' => (float)$unitPrice
+                ];
+            }
+        }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -149,12 +171,14 @@
 
                 <div class="button">
                     <input type="hidden" id="UserID"        name="UserID"        value="<?php echo $userID ?>">
+                    <input type="hidden" id="OrderID"       name="OrderID"       value="">
                     <input type="hidden" id="ShippingFee"   name="ShippingFee"   value="">
                     <input type="hidden" id="OrderDiscount" name="OrderDiscount" value="0">
                     <input type="hidden" id="Address"       name="Address"       value="<?php echo $user['HouseRoadAddress'] ?>#<?php echo $user['Ward'] ?>#<?php echo $user['District'] ?>#<?php echo $user['Province'] ?>">
                     <input type="hidden" id="PaymentID"     name="PaymentID"     value="PA02"> <!-- Default PayPal -->
                     <input type="hidden" id="VoucherID"     name="VoucherID"     value="NULL">
                     <input type="hidden" id="Total"         name="Total"         value="">
+                    <input type="hidden" id="CartItems"     value='<?php echo json_encode($cartItems); ?>'>
 
                     <!-- Nút thanh toán -->
                     <button type="button" id="payBtn" class="payment_button">Thanh Toán</button>
@@ -179,6 +203,36 @@
                     let paypalButtonsRendered = false;
                     let paypalLoadAttempts = 0;
                     const MAX_PAYPAL_RETRIES = 2;
+                    let PAYPAL_ORDER_ID = null; // Will be populated from backend
+
+                    // Generate order ID from backend before PayPal submission
+                    async function generateOrderID() {
+                        try {
+                            const response = await fetch('modules/generate_order_id.php');
+                            const data = await response.json();
+                            if (data.success && data.order_id) {
+                                PAYPAL_ORDER_ID = data.order_id;
+                                console.log('[PayPal] Generated OrderID:', PAYPAL_ORDER_ID);
+                                // Store in hidden field for place_order.php
+                                document.getElementById('OrderID').value = PAYPAL_ORDER_ID;
+                                return PAYPAL_ORDER_ID;
+                            } else {
+                                console.error('[PayPal] Failed to generate order ID:', data.error);
+                                return null;
+                            }
+                        } catch (error) {
+                            console.error('[PayPal] Error generating order ID:', error);
+                            return null;
+                        }
+                    }
+
+                    // Strip Vietnamese diacritics for PayPal-friendly strings
+                    function stripDiacritics(str) {
+                        if (!str) return '';
+                        return str.normalize('NFD')
+                                  .replace(/[\u0300-\u036f]/g, '')
+                                  .replace(/[đĐ]/g, 'd');
+                    }
 
                     function loadPayPalSdk(onReady, onError) {
                         onError = onError || (() => {});
@@ -265,24 +319,60 @@
                                 
                                 window.paypal.Buttons({
                                     createOrder: function(data, actions) {
-                                        const totalVal = totalInput.value || '10.00';
-                                        const cleanTotal = parseFloat(totalVal.toString().replace(/,/g, "")) || 0;
-                                        
-                                        console.log('[PayPal] createOrder called, amount:', cleanTotal);
-                                        
+                                        const totalStr        = totalInput.value || '0';
+                                        const shippingStr     = shippingFeeInput.value || '0';
+                                        const discountStr     = orderDiscountInput.value || '0';
+                                        const cartItemsRaw    = document.getElementById('CartItems').value || '[]';
+
+                                        const shippingFee   = parseFloat(shippingStr.toString().replace(/,/g, "")) || 0;
+                                        const orderDiscount = parseFloat(discountStr.toString().replace(/,/g, "")) || 0;
+
                                         // Validate all required form fields before creating order
-                                        if (!userIdInput.value || !addressInput.value || !shippingFeeInput.value) {
+                                        if (!userIdInput.value || !addressInput.value || shippingFeeInput.value === '') {
                                             console.error('[PayPal] Missing required fields');
                                             alert('Vui lòng hoàn tất các bước thanh toán trước khi tiếp tục.');
                                             throw new Error('Missing required fields');
                                         }
-                                        
+
+                                        // Build item list with diacritics stripped
+                                        const cartItems = JSON.parse(cartItemsRaw).map(item => ({
+                                            name: stripDiacritics(item.name),
+                                            sku: item.sku,
+                                            quantity: item.quantity.toString(),
+                                            unit_amount: {
+                                                currency_code: "USD",
+                                                value: Number(item.unit_price).toFixed(2)
+                                            }
+                                        }));
+
+                                        const itemTotal = cartItems.reduce((sum, i) => sum + Number(i.unit_amount.value) * Number(i.quantity), 0);
+
+                                        // Recompute grand total to avoid PayPal AMOUNT_MISMATCH
+                                        const grandTotalRaw = itemTotal + shippingFee - orderDiscount;
+                                        const grandTotal = Number(Math.max(grandTotalRaw, 0).toFixed(2));
+
+                                        const descRaw = `Order ${PAYPAL_ORDER_ID || 'Pending'} - ${cartItems.map(i => i.name).join(', ')}`;
+                                        const description = stripDiacritics(descRaw).slice(0, 127);
+                                        const invoiceId = stripDiacritics(PAYPAL_ORDER_ID || 'GEN-' + Date.now()).slice(0, 127);
+                                        const customId = stripDiacritics(userIdInput.value || 'guest').slice(0, 127);
+
+                                        console.log('[PayPal] createOrder breakdown', { itemTotal, shippingFee, orderDiscount, grandTotal });
+
                                         return actions.order.create({
-                                            purchase_units: [{ 
-                                                amount: { 
-                                                    value: cleanTotal.toFixed(2),
-                                                    currency_code: "USD"
-                                                } 
+                                            purchase_units: [{
+                                                amount: {
+                                                    currency_code: "USD",
+                                                    value: grandTotal.toFixed(2),
+                                                    breakdown: {
+                                                        item_total: { currency_code: "USD", value: itemTotal.toFixed(2) },
+                                                        shipping:   { currency_code: "USD", value: shippingFee.toFixed(2) },
+                                                        discount:   { currency_code: "USD", value: orderDiscount.toFixed(2) }
+                                                    }
+                                                },
+                                                description: description,
+                                                invoice_id: invoiceId,
+                                                custom_id: customId,
+                                                items: cartItems
                                             }]
                                         });
                                     },
@@ -373,15 +463,24 @@
 
                             /* PAYPAL */
                             if (paymentID === "PA02") {
-                                console.log('[Payment Button] PayPal selected, rendering buttons');
+                                console.log('[Payment Button] PayPal selected, generating order ID');
                                 // Ensure PaymentID is set correctly
                                 paymentIDEl.value = "PA02";
                                 payBtn.disabled = true;
                                 payBtn.textContent = "Đang tải PayPal...";
                                 
-                                renderPayPalButtons();
-                                payBtn.style.display = "none";
-                                document.getElementById("paypal-button-container").style.display = "block";
+                                // Generate OrderID first, then render buttons
+                                generateOrderID().then((orderId) => {
+                                    if (orderId) {
+                                        renderPayPalButtons();
+                                        payBtn.style.display = "none";
+                                        document.getElementById("paypal-button-container").style.display = "block";
+                                    } else {
+                                        alert('Không thể tạo mã đơn hàng. Vui lòng thử lại.');
+                                        payBtn.disabled = false;
+                                        payBtn.textContent = "Thanh Toán";
+                                    }
+                                });
                                 return;
                             }
 

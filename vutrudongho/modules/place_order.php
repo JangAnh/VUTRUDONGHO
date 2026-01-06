@@ -15,11 +15,20 @@
             exit;
         }
         
-        // Get the maximum numeric part of existing OrderIDs and increment to avoid duplicates
-        $result = $conn->query("SELECT MAX(CAST(SUBSTRING(OrderID, 3) AS UNSIGNED)) as max_id FROM `order`");
-        $row = $result->fetch_assoc();
-        $nextId = ($row['max_id'] ?? 0) + 1;
-        $orderID = "OD" . sprintf('%08d', $nextId);
+        // Use OrderID from frontend if provided (PayPal pre-generates it), otherwise generate new one
+        $orderID = isset($_POST['OrderID']) && !empty($_POST['OrderID']) 
+            ? trim($_POST['OrderID']) 
+            : null;
+        
+        if (!$orderID) {
+            // Generate new OrderID for VNPay/COD
+            $result = $conn->query("SELECT MAX(CAST(SUBSTRING(OrderID, 3) AS UNSIGNED)) as max_id FROM `order`");
+            $row = $result->fetch_assoc();
+            $nextId = ($row['max_id'] ?? 0) + 1;
+            $orderID = "OD" . sprintf('%08d', $nextId);
+        }
+        
+        error_log('[place_order] Using OrderID: ' . $orderID);
 
         $userID = trim($_POST['UserID']);
         $orderDate = date("Y-m-d H:i:s");
