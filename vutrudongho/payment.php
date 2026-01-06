@@ -63,21 +63,14 @@
             </div>
             <div class="delivery_cards">
                 <?php 
-                    $fee1 = 0;
-                    $fee2 = 0;
+                    $fee1 = 1;
+                    $fee2 = 2;
                     $date1 = date_create(date("y-m-d"));
                     date_add($date1, date_interval_create_from_date_string("3 days"));
                     $date2 = date_create(date("y-m-d"));
                     date_add($date2, date_interval_create_from_date_string("2 days"));
 
-                    if( $user['Province'] == "Thành phố Hồ Chí Minh" || $user['Province'] == "Thành phố Hà Nội") {
-                        $fee1 = 1; 
-                        $fee2 = 2.28; 
-                    }
-                    else{
-                        $fee1 = 35000;  
-                        $fee2 = 120000; 
-                    }
+                    
                 ?>
 
                 <!-- Giao hàng nhanh -->
