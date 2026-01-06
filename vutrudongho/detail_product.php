@@ -30,18 +30,16 @@ if (isset($_GET['ProductID'])) {
         // Lấy stock trước khi render <head> để dùng trong schema
         $inStock = get_quanty_product_byID($product["ProductID"]);
 
-        // Tạo base URL động 
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
         $host = $_SERVER['HTTP_HOST'];
-        // dirname($_SERVER['SCRIPT_NAME']) trả về đường dẫn thư mục chứa file hiện tại
-        $rootPath = rtrim($protocol . $host . dirname($_SERVER['SCRIPT_NAME']), '/');
 
-        // Tạo các URL dùng trong OG / Schema
-        $productUrl = $rootPath . '/vutrudongho/vutrudongho/product/' . $product['ProductID'] . '/' . $productSlug;
+        $baseUrl = $protocol . $host . '/vutrudongho/vutrudongho';
 
-        $imageUrl = $rootPath . '/vutrudongho/vutrudongho/assets/Img/productImg/' . rawurlencode($product['ProductImg']);
-        $homeUrl = $rootPath . '/vutrudongho/vutrudongho/index.php';
-        $productsPageUrl = $rootPath . '/vutrudongho/vutrudongho/product.php';
+        $productUrl = $baseUrl . '/product/' . $product['ProductID'] . '/' . $productSlug;
+        $imageUrl   = $baseUrl . '/assets/Img/productImg/' . rawurlencode($product['ProductImg']);
+        $homeUrl    = $baseUrl . '/index.php';
+        $productsPageUrl = $baseUrl . '/product.php';
+
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -239,7 +237,58 @@ if (isset($_GET['ProductID'])) {
                         <?php if (!isset($inStock) || (int)$inStock['Quantity'] == 0) { echo 'class="disabled_button" disabled';} else { echo 'class="enabled_button"';} ?> >
                         Thêm vào giỏ hàng
                     </button>
+                    <!-- Nút Share Facebook -->
+                    <button class="share-btn" onclick="shareFacebook()" aria-label="Chia sẻ">
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </button>
                 </div>
+                
+                <!-- Font Awesome (chỉ cần 1 lần) -->
+                <link rel="stylesheet"
+                    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+                <style>
+                    .cart-share-wrapper {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 10px;  
+                    }
+
+                    .share-btn {
+                        width: 44px;
+                        height: 44px;
+                        border-radius: 50%;
+                        border: 1px solid #ddd;
+                        background: #fff;
+                        color: #444;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                    }
+
+                    .share-btn i {
+                        font-size: 17px;
+                    }
+
+                    .share-btn:hover {
+                        background-color: #f2f2f2;
+                        color: #1877f2;
+                    }
+                </style>
+
+                <script>
+                function shareFacebook() {
+                    const url = encodeURIComponent(window.location.href);
+                    const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+                    window.open(
+                        fbShareUrl,
+                        'facebook-share-dialog',
+                        'width=800,height=600'
+                    );
+                }
+                </script>
+
             </div>
         </div>
 
