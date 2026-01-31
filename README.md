@@ -77,15 +77,12 @@
 
 1. Clone this repository:
    	*git clone https://github.com/JangAnh/VUTRUDONGHO*
-   ---
 2. #### Move project to XAMPP *htdocs* folder.
 3. Create database in MySQL and import SQL file:
    	*vutrudongho.sql*
-   ---
 4. #### Update database configuration in *config.php*.
 5. #### Start Apache \& MySQL in XAMPP.
 6. #### Access the website via browser:
-
 #### &nbsp;	*http://localhost/VUTRUDONGHO/vutrudongho*
 
 
