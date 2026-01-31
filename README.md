@@ -83,15 +83,15 @@
 4. #### Update database configuration in *config.php*.
 5. #### Start Apache \& MySQL in XAMPP.
 6. #### Access the website via browser:
-#### &nbsp;	*http://localhost/VUTRUDONGHO/vutrudongho*
+	*http://localhost/VUTRUDONGHO/vutrudongho*
 
 
 
 
 
-*---*
+---
 
-### <b>👤 Role \& Responsibilities</b>
+### **👤 Role \& Responsibilities**
 
 
 
@@ -133,27 +133,24 @@
 
 #### Website UI screenshots
 
-#### !\[HomePage](screenshots/HomePage.png)
+#### ![HomePage](screenshots/HomePage.png)
 
-#### !\[ProductListPage](screenshots/ProductListPage.png)
+#### ![ProductListPage](screenshots/ProductListPage.png)
 
-#### !\[ShoppingCartPage](screenshots/ShoppingCartPage.png)
+#### ![ShoppingCartPage](screenshots/ShoppingCartPage.png)
 
-#### !\[CheckoutPage](screenshots/CheckoutPage.png)
+#### ![CheckoutPage](screenshots/ShoppingCartPage.png)
 
-#### !\[AboutUsPage](screenshots/AboutUsPage.png)
+#### ![AboutUsPage](screenshots/AboutUsPage.png)
 
-#### !\[UserManagementPage\_ShopOwner](screenshots/UserManagementPage\_ShopOwner.png)
+#### ![UserManagementPage_ShopOwner](screenshots/UserManagementPage_ShopOwner.png)
 
-#### !\[ProductManagementPage\_ShopOwner](screenshots/ProductManagementPage\_ShopOwner.png)
+#### ![ProductManagementPage_ShopOwner](screenshots/ProductManagementPage_ShopOwner.png)
 
-#### !\[OrderManagementPage\_ShopOwner](screenshots/OrderManagementPage\_ShopOwner.png)
+#### ![OrderManagementPage_ShopOwner](screenshots/UserManagementPage_ShopOwner.png)
 
 
 
-#### Database schema (ERD)
-
-#### !\[ERD](screenshots/ERD.png)
 
 
 
