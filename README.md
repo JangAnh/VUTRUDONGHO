@@ -148,21 +148,3 @@
 #### ![ProductManagementPage_ShopOwner](screenshots/ProductManagementPage_ShopOwner.png)
 
 #### ![OrderManagementPage_ShopOwner](screenshots/UserManagementPage_ShopOwner.png)
-
-
-
-
-
-
----
-
-### **✅ Notes for Recruiters**
-
-
-
-#### Projects were developed for academic purposes but follow real-world workflows.
-
-#### Source code is available for review.
-
-#### Deployment is no longer active; projects can be run locally using the instructions above.
-
