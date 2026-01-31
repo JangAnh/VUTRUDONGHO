@@ -14,7 +14,7 @@
 
 
 
-**---**
+
 
 ### **📖 Description**
 
@@ -76,7 +76,7 @@
 
 
 1. Clone this repository:
-   	*git clone https://github.com/your-username/ecommerce-website.git*
+   	*git clone https://github.com/JangAnh/VUTRUDONGHO*
    ---
 2. #### Move project to XAMPP *htdocs* folder.
 3. Create database in MySQL and import SQL file:
@@ -102,7 +102,7 @@
 
 * #### Analyzed system requirements
 * #### Designed database schema (ERD)
-* #### Assigned tasks and tracked progress using Trello / Jira
+* #### Assigned tasks and tracked progress using Jira
 * #### Developed backend features using PHP
 * #### Integrated payment gateways
 * #### Managed source code with GitHub
